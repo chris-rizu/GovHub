@@ -1,0 +1,531 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+/* ===========================================
+   THEME VARIABLES - Must come before everything
+   =========================================== */
+
+/* Default (dark mode) - These are the base values */
+:root {
+  --theme-bg-start: #0a0f1c;
+  --theme-bg-end: #0f172a;
+  --theme-bg: #0a0f1c;
+  --theme-card: #111827;
+  --theme-text: #f1f5f9;
+  --theme-accent: #22d3ee;
+  --theme-accent-darker: #06b6d4;
+  --theme-border: #334155;
+  --theme-success: #10b981;
+  --theme-warning: #f59e0b;
+  --theme-danger: #ef4444;
+  --theme-input: #1f2937;
+  --theme-hover: #1f2937;
+}
+
+/* Light mode overrides */
+html.light {
+  --theme-bg-start: #f0f9ff;
+  --theme-bg-end: #e0f2fe;
+  --theme-bg: #ffffff;
+  --theme-card: #f8fafc;
+  --theme-text: #0f172a;
+  --theme-accent: #0ea5e9;
+  --theme-border: #e2e8f0;
+  --theme-input: #f1f5f9;
+  --theme-hover: #f1f5f9;
+}
+
+/* Map legacy var names to theme vars */
+:root {
+  --bg: var(--theme-bg);
+  --card: var(--theme-card);
+  --text: var(--theme-text);
+  --accent: var(--theme-accent);
+  --border: var(--theme-border);
+  --success: var(--theme-success);
+  --warning: var(--theme-warning);
+  --danger: var(--theme-danger);
+  --input-bg: var(--theme-input);
+  --hover-bg: var(--theme-hover);
+}
+
+/* Dark mode specific styles (default) */
+html {
+  background: var(--theme-bg);
+  color: var(--theme-text);
+  transition: background 0.4s, color 0.4s;
+}
+
+html.light {
+  background: var(--theme-bg);
+  color: var(--theme-text);
+}
+
+/* ===========================================
+   BASE STYLES
+   =========================================== */
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: linear-gradient(135deg, var(--theme-bg-start) 0%, var(--theme-bg-end) 50%, #0c1222 100%);
+  background-attachment: fixed;
+  background-size: cover;
+  color: var(--theme-text);
+  transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 100vh;
+}
+
+.logo-font {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.card-hover {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.15);
+}
+
+/* Subtle glow on cards for gradient background */
+.bg-\[var\(--card\)\] {
+  position: relative;
+}
+
+/* Add ambient glow effect */
+body::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 20%, rgba(34, 211, 238, 0.03) 0%, transparent 50%),
+              radial-gradient(circle at 70% 80%, rgba(16, 185, 129, 0.02) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Ensure main content sits above glow */
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+.pill {
+  background: var(--theme-border);
+  color: var(--theme-text);
+  transition: all 0.2s;
+}
+.pill.active {
+  background: var(--theme-accent);
+  color: #0a0f1c;
+  font-weight: 600;
+}
+
+.signal-dot {
+  animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.tab-active {
+  color: var(--theme-accent);
+  border-bottom: 2px solid var(--theme-accent);
+}
+
+/* ===========================================
+   ANIMATIONS
+   =========================================== */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-in { animation: fadeIn 0.3s ease-out; }
+.slide-in { animation: slideIn 0.3s ease-out; }
+.animate-pulse { animation: pulse 2s infinite; }
+
+/* Floating animation for cards */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.float-animation {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Parallax effect on hero */
+header {
+  position: relative;
+}
+
+/* Smooth hover effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 25px 30px -5px rgb(0 0 0 / 0.2);
+}
+
+/* Table row animations */
+tbody tr {
+  transition: all 0.2s ease-out;
+}
+
+tbody tr:hover {
+  transform: scale(1.01);
+}
+
+/* Button ripple effect */
+button {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Progress bar animation */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ===========================================
+   COMPONENT STYLES
+   =========================================== */
+
+table { border-collapse: collapse; }
+
+/* Loading spinner */
+.spinner {
+  border: 3px solid var(--theme-border);
+  border-top: 3px solid var(--theme-accent);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--theme-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--theme-border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-accent);
+}
+
+/* Utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--theme-border);
+  transition: .4s;
+  border-radius: 24px;
+}
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+input:checked + .toggle-slider {
+  background-color: var(--theme-accent);
+}
+input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+
+/* Toast notifications */
+.toast-notification {
+  animation: slideIn 0.3s ease-out, fadeOut 0.3s ease-out 2.7s forwards;
+}
+@keyframes fadeOut {
+  to { opacity: 0; transform: translateY(10px); }
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .hero-title { font-size: 2rem !important; }
+  .service-card { min-height: auto; }
+  .modal-content { max-h: 85vh; }
+  #search-input { width: 100%; }
+}
+
+/* Auto-scrolling carousel */
+.auto-scroll-carousel {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+}
+
+.auto-scroll-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-container {
+  display: flex;
+  gap: 0.5rem;
+  animation: scrollLeft 40s linear infinite;
+}
+
+.carousel-container:hover {
+  animation-play-state: paused;
+}
+
+@keyframes scrollLeft {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-50% - 0.25rem));
+  }
+}
+
+/* ===========================================
+   MAP STYLES
+   =========================================== */
+
+/* Map filter buttons */
+.map-filter-btn {
+  background: var(--theme-card);
+  color: var(--theme-text);
+  border: 1px solid var(--theme-border);
+  transition: all 0.2s;
+}
+
+.map-filter-btn:hover {
+  background: var(--theme-hover);
+}
+
+.map-filter-btn.active {
+  background: var(--theme-accent) !important;
+  color: #0a0f1c !important;
+  font-weight: 600;
+}
+
+/* Custom map markers */
+.custom-map-marker {
+  background: transparent;
+  border: none;
+}
+
+/* User location marker pulse animation */
+@keyframes locationPulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+.user-location-marker::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #3B82F6;
+  animation: locationPulse 2s infinite;
+}
+
+/* Leaflet popup customization for dark mode */
+.leaflet-popup-content-wrapper {
+  background: var(--theme-card);
+  color: var(--theme-text);
+  border-radius: 12px;
+}
+
+.leaflet-popup-tip {
+  background: var(--theme-card);
+}
+
+.leaflet-container {
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Map container */
+#office-map {
+  background: var(--theme-bg);
+  min-height: 300px;
+}
+
+/* Office info panel */
+#office-info-panel {
+  transition: all 0.3s ease-out;
+  animation: slideUp 0.3s ease-out;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Map modal specific styles */
+#map-modal {
+  backdrop-filter: blur(4px);
+}
+
+/* ===========================================
+   MOBILE BOTTOM NAVIGATION
+   =========================================== */
+
+/* Safe area padding for devices with home indicator */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+/* Mobile bottom nav */
+#mobile-bottom-nav {
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  background: var(--theme-card);
+}
+
+#mobile-bottom-nav .mobile-nav-btn {
+  color: var(--theme-text);
+  opacity: 60%;
+  transition: all 0.2s ease;
+}
+
+#mobile-bottom-nav .mobile-nav-btn:hover {
+  opacity: 80%;
+  background: var(--theme-bg);
+}
+
+#mobile-bottom-nav .mobile-nav-btn.active {
+  opacity: 100%;
+  color: var(--theme-accent);
+}
+
+#mobile-bottom-nav .mobile-nav-btn.active i {
+  transform: scale(1.1);
+}
+
+/* ===========================================
+   MOBILE NAVBAR HEADER
+   =========================================== */
+
+/* Navbar gradient */
+nav.nav-gradient {
+  background: linear-gradient(135deg, #0a0f1c 0%, #0f172a 100%);
+}
+
+html.light nav.nav-gradient {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+}
+
+/* Smooth hover effect for mobile nav buttons */
+nav.bg-\[\#0a0f1c\] button:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure perfect center alignment */
+nav.bg-\[\#0a0f1c\] > div:first-child {
+  align-items: center;
+}
+
+/* Add extra padding to bottom of body when bottom nav is visible */
+@media (max-width: 1023px) {
+  body {
+    padding-bottom: 75px;
+  }
+}
+
+@media (min-width: 1024px) {
+  #mobile-bottom-nav {
+    display: none;
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la \"C:/Users/Rizu/Desktop/Kailangan/\"*.backup)",
+      "Bash(dir *.html *.js *.css)"
+    ]
+  }
+}

@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en" class="dark" style="scroll-behavior: smooth;">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GovHub • Exact Requirements • Cebu</title>
+
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#0a0f1c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="GovHub">
+  <meta name="description" content="Real-time government requirements and checklists for Cebu, Philippines">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Ccircle cx='14' cy='14' r='13' fill='%2322d3ee' opacity='0.15'/%3E%3Cpath d='M7 5C7 3.89543 7.89543 3 9 3H16L21 8V23C21 24.1046 20.1046 25 19 25H9C7.89543 25 7 24.1046 7 23V5Z' fill='%2322d3ee'/%3E%3Cpath d='M16 3V8H21' fill='%2306b6d4'/%3E%3Ccircle cx='14' cy='15' r='5' fill='%230a0f1c'/%3E%3Cpath d='M11 15L12.5 16.5L17 12' stroke='%2322d3ee' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
+
+  <!-- Apple Touch Icon -->
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Ccircle cx='14' cy='14' r='13' fill='%2322d3ee' opacity='0.15'/%3E%3Cpath d='M7 5C7 3.89543 7.89543 3 9 3H16L21 8V23C21 24.1046 20.1046 25 19 25H9C7.89543 25 7 24.1046 7 23V5Z' fill='%2322d3ee'/%3E%3Cpath d='M16 3V8H21' fill='%2306b6d4'/%3E%3Ccircle cx='14' cy='15' r='5' fill='%230a0f1c'/%3E%3Cpath d='M11 15L12.5 16.5L17 12' stroke='%2322d3ee' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      // other config...
+    }
+  </script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+  <!-- Leaflet CSS for OpenStreetMap -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body class="antialiased dark">
+
+  <!-- APP LOADING OVERLAY -->
+  <div id="app-loading" class="fixed inset-0 bg-[var(--bg)] z-[10000] flex items-center justify-center">
+    <div class="text-center">
+      <div class="spinner mx-auto mb-4" style="width: 48px; height: 48px;"></div>
+      <p class="text-sm opacity-60">Loading GovHub...</p>
+    </div>
+  </div>
+
+  <!-- NAVBAR -->
+  <nav class="border-b border-[var(--border)] sticky top-0 z-50 nav-gradient">
+    <!-- Mobile Header (Single Row) -->
+    <div class="lg:hidden flex items-center justify-between px-3 py-3 h-14">
+      <!-- Left: Logo + Name + Live Badge + Location -->
+      <div class="flex items-center gap-2">
+        <!-- Logo Icon + Name -->
+        <div class="flex items-center gap-1.5">
+          <svg class="w-6 h-6 flex-shrink-0" width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="14" cy="14" r="13" fill="#22d3ee" opacity="0.15"/>
+            <path d="M7 5C7 3.89543 7.89543 3 9 3H16L21 8V23C21 24.1046 20.1046 25 19 25H9C7.89543 25 7 24.1046 7 23V5Z" fill="#22d3ee"/>
+            <path d="M16 3V8H21" fill="#06b6d4"/>
+            <circle cx="14" cy="15" r="5" fill="#0a0f1c"/>
+            <path d="M11 15L12.5 16.5L17 12" stroke="#22d3ee" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+          <span class="logo-font text-white text-base font-semibold tracking-tight">GovHub</span>
+        </div>
+
+        <!-- Live Badge -->
+        <span class="px-2 py-0.5 bg-emerald-400 text-[#0a0f1c] text-[10px] font-bold rounded-full flex items-center gap-1 flex-shrink-0">
+          <span class="relative flex h-1.5 w-1.5">
+            <span class="signal-dot absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+          </span>
+          LIVE
+        </span>
+
+        <!-- Location Pin + Current Location -->
+        <div class="flex items-center gap-1">
+          <i class="fas fa-map-marker-alt text-[#22d3ee] text-sm"></i>
+          <span id="mobile-location" class="text-white text-xs font-medium truncate max-w-[100px]">All Cebu</span>
+        </div>
+      </div>
+
+      <!-- Right: Crosshair Icon -->
+      <button id="mobile-location-btn" onclick="requestGeolocation()" class="p-2 hover:bg-white/10 rounded-xl transition">
+        <i class="fas fa-location-crosshairs text-[#22d3ee] text-lg"></i>
+      </button>
+    </div>
+
+    <!-- Desktop Header -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 hidden lg:block">
+      <div class="flex items-center justify-between">
+
+        <!-- Logo & Location -->
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-x-3">
+            <svg class="w-9 h-9 flex-shrink-0" width="32" height="32" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Circular background/hub -->
+              <circle cx="14" cy="14" r="13" fill="var(--accent)" opacity="0.15"/>
+              <!-- Document/Paper base -->
+              <path d="M7 5C7 3.89543 7.89543 3 9 3H16L21 8V23C21 24.1046 20.1046 25 19 25H9C7.89543 25 7 24.1046 7 23V5Z" fill="var(--accent)"/>
+              <!-- Document folded corner -->
+              <path d="M16 3V8H21" fill="var(--theme-accent-darker)"/>
+              <!-- Checkmark circle -->
+              <circle cx="14" cy="15" r="5" fill="var(--theme-bg)"/>
+              <!-- Checkmark -->
+              <path d="M11 15L12.5 16.5L17 12" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+            <div class="logo-font text-2xl tracking-[-1px]">GovHub</div>
+          </div>
+
+          <span class="text-xs px-3 py-1 bg-emerald-400 text-[#0a0f1c] font-semibold rounded-full flex items-center gap-x-1">
+            <span class="relative flex h-2 w-2">
+              <span class="signal-dot absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            LIVE
+          </span>
+        </div>
+
+        <!-- Desktop Right side -->
+        <div class="flex items-center gap-x-6">
+          <!-- Office Locations Map -->
+          <button onclick="showMapModal()" class="flex items-center gap-x-2 hover:bg-[var(--card)] px-3 py-2 rounded-2xl transition" title="View Office Locations">
+            <i class="fas fa-map-marked-alt text-[var(--accent)]"></i>
+            <span class="text-sm font-medium">Office Locations</span>
+          </button>
+
+          <!-- Location -->
+          <button onclick="requestGeolocation()" id="location-btn" class="flex items-center gap-x-2 hover:bg-[var(--card)] px-3 py-2 rounded-2xl transition" title="Use my location">
+            <i class="fas fa-location-crosshairs text-[var(--accent)]"></i>
+            <span class="text-sm font-medium" id="current-location">Detecting...</span>
+          </button>
+
+          <!-- Theme toggle -->
+          <button onclick="toggleTheme()" id="theme-toggle" class="w-10 h-10 flex items-center justify-center rounded-2xl hover:bg-[var(--card)] transition" title="Toggle theme">
+            <i id="theme-icon" class="fas fa-sun text-xl text-yellow-400"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MOBILE MENU OVERLAY -->
+  <div id="mobile-menu" class="lg:hidden fixed inset-0 bg-black/80 z-40 hidden">
+    <div class="bg-[var(--card)] w-80 h-full overflow-y-auto slide-in">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-8">
+          <span class="logo-font text-xl">Menu</span>
+          <button onclick="toggleMobileMenu()" class="p-2 hover:bg-[var(--bg)] rounded-xl">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <nav class="space-y-2">
+          <button onclick="toggleMobileMenu(); showMapModal();" class="mobile-nav-item w-full text-left px-4 py-3 hover:bg-[var(--bg)] rounded-xl flex items-center gap-3">
+            <i class="fas fa-map-marked-alt w-5 text-[var(--accent)]"></i> Office Locations
+          </button>
+          <button onclick="toggleMobileMenu(); showSubmissionModal();" class="mobile-nav-item w-full text-left px-4 py-3 hover:bg-[var(--bg)] rounded-xl flex items-center gap-3">
+            <i class="fas fa-plus-circle w-5 text-[var(--accent)]"></i> Submit Update
+          </button>
+          <button onclick="toggleMobileMenu(); showSettings();" class="mobile-nav-item w-full text-left px-4 py-3 hover:bg-[var(--bg)] rounded-xl flex items-center gap-3">
+            <i class="fas fa-cog w-5 text-[var(--accent)]"></i> Settings
+          </button>
+          <hr class="border-[var(--border)] my-4">
+          <button onclick="toggleMobileMenu(); toggleTheme();" class="mobile-nav-item w-full text-left px-4 py-3 hover:bg-[var(--bg)] rounded-xl flex items-center gap-3">
+            <i id="mobile-theme-icon" class="fas fa-sun w-5 text-yellow-400"></i> Toggle Theme
+          </button>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO / SIGNAL BOARD -->
+  <header class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-8 sm:pb-10">
+    <div class="flex flex-col lg:flex-row gap-8 lg:gap-12">
+
+      <!-- Left content -->
+      <div class="lg:w-2/3">
+        <div class="inline-flex items-center gap-x-2 bg-[var(--card)] text-emerald-600 dark:text-emerald-400 text-xs sm:text-sm font-medium px-4 h-8 rounded-full mb-4 sm:mb-6">
+          <span class="relative flex h-2 w-2">
+            <span class="signal-dot absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span id="signal-date">KAILANGANKO SIGNAL BOARD</span>
+        </div>
+
+        <h1 class="hero-title text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
+          Exact government requirements.<br class="hidden sm:block"> One clean checklist for Cebu.
+        </h1>
+
+        <p class="mt-4 sm:mt-6 text-base sm:text-xl max-w-lg opacity-90">
+          Real-time official data + community-verified updates. Never get turned away again because of one missing document.
+        </p>
+
+        <div class="mt-6 sm:mt-8 flex flex-wrap items-center gap-3 sm:gap-4">
+          <button onclick="generateChecklist()" class="bg-[var(--accent)] hover:bg-cyan-300 text-[#0a0f1c] font-semibold px-6 sm:px-8 h-11 sm:h-12 rounded-full flex items-center gap-x-2 sm:gap-x-3 text-base sm:text-lg transition">
+            <i class="fas fa-file-lines"></i>
+            <span class="hidden sm:inline">GENERATE MY CHECKLIST</span>
+            <span class="sm:hidden">MY CHECKLIST</span>
+          </button>
+          <button onclick="showMapModal()" class="border border-[var(--border)] hover:bg-[var(--card)] font-semibold px-6 sm:px-8 h-11 sm:h-12 rounded-full flex items-center gap-x-2 sm:gap-x-3 text-base sm:text-lg transition">
+            <i class="fas fa-map-marked-alt text-[var(--accent)]"></i>
+            <span class="hidden sm:inline">VIEW MAP</span>
+            <span class="sm:hidden">MAP</span>
+          </button>
+          <button onclick="showSubmissionModal()" class="border border-[var(--border)] hover:bg-[var(--card)] font-semibold px-6 sm:px-8 h-11 sm:h-12 rounded-full flex items-center gap-x-2 sm:gap-x-3 text-base sm:text-lg transition">
+            <i class="fas fa-plus"></i>
+            <span class="hidden sm:inline">SUBMIT UPDATE</span>
+            <span class="sm:hidden">SUBMIT</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right coverage cards -->
+      <div class="lg:w-1/3 space-y-3 sm:space-y-4">
+        <div class="hidden sm:block bg-[var(--card)] rounded-3xl p-6 border border-[var(--border)]">
+          <div class="uppercase text-xs tracking-widest opacity-60 mb-2">COVERAGE</div>
+          <div class="text-5xl font-semibold">47</div>
+          <p class="opacity-60 text-sm">Cities & Municipalities</p>
+        </div>
+
+        <div class="hidden sm:block bg-[var(--card)] rounded-3xl p-6 border border-[var(--border)]">
+          <div class="uppercase text-xs tracking-widest opacity-60 mb-2">OFFICES</div>
+          <div class="text-5xl font-semibold">89</div>
+          <p class="opacity-60 text-sm">LTO • SSS • PhilHealth • NBI • DFA • City/Municipal Halls</p>
+        </div>
+
+        <!-- Mobile: side by side -->
+        <div class="sm:hidden grid grid-cols-2 gap-3">
+          <div class="bg-[var(--card)] rounded-2xl p-3 border border-[var(--border)]">
+            <div class="uppercase text-[10px] tracking-widest opacity-60 mb-1">COVERAGE</div>
+            <div class="text-3xl font-semibold leading-tight">47</div>
+            <p class="opacity-60 text-[10px] leading-tight">Cities & Municipalities</p>
+          </div>
+
+          <div class="bg-[var(--card)] rounded-2xl p-3 border border-[var(--border)]">
+            <div class="uppercase text-[10px] tracking-widest opacity-60 mb-1">OFFICES</div>
+            <div class="text-3xl font-semibold leading-tight">89</div>
+            <p class="opacity-60 text-[10px] truncate leading-tight">LTO • SSS • PhilHealth • NBI • DFA</p>
+          </div>
+        </div>
+
+        <div class="bg-[var(--card)] rounded-3xl p-3 sm:p-6 border border-[var(--border)] grid grid-cols-3 gap-2 sm:gap-4 text-center">
+          <div>
+            <div class="text-xl sm:text-4xl font-semibold leading-tight">1,247</div>
+            <div class="text-[10px] sm:text-xs opacity-60 leading-tight">Barangays</div>
+          </div>
+          <div>
+            <div class="text-xl sm:text-4xl font-semibold leading-tight">312</div>
+            <div class="text-[10px] sm:text-xs opacity-60 leading-tight">Active Checklists</div>
+          </div>
+          <div>
+            <div class="text-xl sm:text-4xl font-semibold leading-tight">Cebu</div>
+            <div class="text-[10px] sm:text-xs opacity-60 leading-tight">Coverage</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- CITIES RIBBON -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6">
+    <div class="uppercase text-[10px] sm:text-xs opacity-60 mb-3 flex items-center gap-x-2">
+      <i class="fas fa-map-marker-alt"></i>
+      CENTRAL VISAYAS • FILTER BY LOCATION
+    </div>
+    <div class="flex flex-wrap gap-2" id="cities-ribbon">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- SERVICE TABS -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex gap-x-2 border-b border-[var(--border)] pb-3 overflow-x-auto scrollbar-hide" id="service-tabs">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- SERVICE CARDS -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8" id="service-cards-container">
+    <!-- Populated by JS -->
+  </div>
+
+  <!-- TABLE -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20" id="table-container">
+    <div class="mb-4 sm:mb-6 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between items-start sm:items-center">
+      <div class="text-xs sm:text-sm opacity-60">
+        <span id="results-count">Showing all government offices</span> with live checklist visibility
+      </div>
+      <div class="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
+        <div class="relative flex-1 sm:flex-none">
+          <i class="fas fa-search absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 opacity-40 text-sm"></i>
+          <input type="text"
+                 id="search-input"
+                 oninput="handleSearch(event)"
+                 placeholder="Search services or offices..."
+                 class="w-full sm:w-64 pl-9 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-[var(--card)] border border-[var(--border)] rounded-xl text-sm focus:ring-2 focus:ring-[var(--accent)] placeholder:opacity-40">
+        </div>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+      <table class="w-full text-xs sm:text-sm min-w-[600px]">
+        <thead>
+          <tr class="border-b border-[var(--border)] text-left opacity-60">
+            <th class="py-3 sm:py-4 font-medium whitespace-nowrap">SERVICE / AGENCY</th>
+            <th class="py-3 sm:py-4 font-medium whitespace-nowrap">BRANCH / LOCATION</th>
+            <th class="py-3 sm:py-4 font-medium whitespace-nowrap">STATUS</th>
+            <th class="py-3 sm:py-4 font-medium whitespace-nowrap">LAST UPDATED</th>
+          </tr>
+        </thead>
+        <tbody id="table-body" class="divide-y divide-[var(--border)]">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SUBMISSION MODAL -->
+  <div id="submission-modal" class="hidden fixed inset-0 bg-black/70 z-[9999] flex items-center justify-center p-4">
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl sm:rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in">
+      <div class="p-6 sm:p-8">
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h2 class="text-xl sm:text-2xl font-bold">Submit Community Update</h2>
+            <p class="text-sm opacity-60">Help keep checklists accurate for everyone</p>
+          </div>
+          <button onclick="hideSubmissionModal()" class="p-2 hover:bg-[var(--bg)] rounded-xl">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <form onsubmit="handleSubmitUpdate(event)" class="space-y-4">
+          <div>
+            <label class="block text-sm opacity-70 mb-1">Your Name *</label>
+            <input type="text" id="submit-name" required class="w-full px-4 py-3 bg-[var(--bg)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[var(--accent)]" placeholder="Your name">
+          </div>
+          <div>
+            <label class="block text-sm opacity-70 mb-1">Service/Agency *</label>
+            <select id="submit-service" required class="w-full px-4 py-3 bg-[var(--bg)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[var(--accent)]">
+              <option value="">Select a service</option>
+              <option value="lto">LTO Driver's License</option>
+              <option value="sss">SSS Salary Loan</option>
+              <option value="philhealth">PhilHealth</option>
+              <option value="nbi">NBI Clearance</option>
+              <option value="passport">DFA Passport</option>
+              <option value="barangay">Barangay Clearance</option>
+              <option value="bir">BIR TIN</option>
+              <option value="pagibig">Pag-IBIG</option>
+              <option value="owwa">OWWA</option>
+              <option value="police">Police Clearance</option>
+              <option value="cedula">Cedula</option>
+              <option value="business">Business Permit</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm opacity-70 mb-1">Branch/Location *</label>
+            <input type="text" id="submit-branch" required class="w-full px-4 py-3 bg-[var(--bg)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[var(--accent)]" placeholder="e.g., LTO Mandaue, SSS Cebu City">
+          </div>
+          <div>
+            <label class="block text-sm opacity-70 mb-1">Update Type *</label>
+            <select id="submit-type" required class="w-full px-4 py-3 bg-[var(--bg)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[var(--accent)]">
+              <option value="">What are you updating?</option>
+              <option value="fee">Fee Change</option>
+              <option value="requirement">New/Removed Requirement</option>
+              <option value="process">Process Change</option>
+              <option value="schedule">Schedule Change</option>
+              <option value="tip">Helpful Tip</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm opacity-70 mb-1">Details *</label>
+            <textarea id="submit-details" required rows="4" class="w-full px-4 py-3 bg-[var(--bg)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[var(--accent)] resize-none" placeholder="Describe the update in detail..."></textarea>
+          </div>
+          <div class="flex gap-3">
+            <button type="button" onclick="hideSubmissionModal()" class="flex-1 py-3 rounded-xl border border-[var(--border)] hover:bg-[var(--bg)] font-medium transition">
+              Cancel
+            </button>
+            <button type="submit" class="flex-1 bg-[var(--accent)] hover:bg-cyan-300 text-[#0a0f1c] py-3 rounded-xl font-semibold transition">
+              Submit Update
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settings-modal" class="hidden fixed inset-0 bg-black/70 z-[9999] flex items-center justify-center p-4">
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl sm:rounded-3xl max-w-md w-full max-h-[90vh] overflow-hidden animate-in">
+      <div class="p-6 sm:p-8">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl sm:text-2xl font-bold">Settings</h2>
+          <button onclick="hideSettings()" class="p-2 hover:bg-[var(--bg)] rounded-xl">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="space-y-4">
+          <div class="flex items-center justify-between py-3 border-b border-[var(--border)]">
+            <div>
+              <div class="font-medium">Dark Mode</div>
+              <div class="text-xs opacity-60">Use dark theme</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="darkmode-toggle" onchange="toggleTheme()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="flex items-center justify-between py-3 border-b border-[var(--border)]">
+            <div>
+              <div class="font-medium">Auto-detect Location</div>
+              <div class="text-xs opacity-60">Use GPS for nearby offices</div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="geoloc-toggle" onchange="toggleGeolocation()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <button onclick="clearAllData()" class="w-full py-3 rounded-xl border border-red-400/30 text-red-400 hover:bg-red-400/10 font-medium transition">
+            Clear All Data
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAP MODAL -->
+  <div id="map-modal" class="hidden fixed inset-0 bg-black/70 z-[9999] flex items-center justify-center p-0 sm:p-4">
+    <div class="bg-[var(--card)] w-full h-full sm:h-[90vh] sm:max-w-6xl sm:rounded-2xl overflow-hidden flex flex-col">
+      <!-- Map Header -->
+      <div class="p-4 sm:p-6 border-b border-[var(--border)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-xl sm:text-2xl font-bold">Office Locations Map</h2>
+          <p class="text-sm opacity-60">Find government offices near you in Cebu</p>
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button onclick="findNearestOffice()" id="find-nearest-btn" class="flex-1 sm:flex-none flex items-center gap-2 bg-[var(--accent)] hover:bg-cyan-300 text-[#0a0f1c] px-4 py-2.5 rounded-xl font-medium transition">
+            <i class="fas fa-location-crosshairs"></i>
+            <span>Find Nearest</span>
+          </button>
+          <button onclick="hideMapModal()" class="p-2.5 hover:bg-[var(--bg)] rounded-xl">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="px-4 sm:px-6 py-3 border-b border-[var(--border)] flex gap-2 overflow-x-auto scrollbar-hide">
+        <button onclick="filterMapMarkers('all')" class="map-filter-btn active px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap">All Offices</button>
+        <button onclick="filterMapMarkers('lto')" class="map-filter-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap">LTO</button>
+        <button onclick="filterMapMarkers('sss')" class="map-filter-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap">SSS</button>
+        <button onclick="filterMapMarkers('philhealth')" class="map-filter-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap">PhilHealth</button>
+        <button onclick="filterMapMarkers('nbi')" class="map-filter-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap">NBI</button>
+        <button onclick="filterMapMarkers('dfa')" class="map-filter-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap">DFA</button>
+        <button onclick="filterMapMarkers('barangay')" class="map-filter-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap">Barangay/City Hall</button>
+      </div>
+
+      <!-- Suggest Office Button -->
+      <div class="px-4 sm:px-6 py-2 bg-[var(--bg)] border-b border-[var(--border)] flex items-center justify-between">
+        <span class="text-xs opacity-60">Don't see an office? Help the community by adding it.</span>
+        <button onclick="showSuggestOfficeModal()" class="text-xs text-[var(--accent)] hover:underline font-medium flex items-center gap-1">
+          <i class="fas fa-plus-circle"></i> Suggest Office
+        </button>
+      </div>
+
+      <!-- Map Container -->
+      <div class="flex-1 relative">
+        <div id="office-map" class="w-full h-full"></div>
+
+        <!-- Office Info Panel (shows when marker clicked) -->
+        <div id="office-info-panel" class="hidden absolute bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 bg-[var(--card)] border border-[var(--border)] rounded-xl shadow-xl p-4 z-[1000]">
+          <button onclick="closeOfficeInfoPanel()" class="absolute top-2 right-2 p-1 hover:bg-[var(--bg)] rounded-lg">
+            <i class="fas fa-times"></i>
+          </button>
+          <div id="office-info-content"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUGGEST OFFICE MODAL -->
+  <div id="suggest-office-modal" class="hidden fixed inset-0 bg-black/70 z-[9999] flex items-center justify-center p-4">
+    <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl sm:rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in">
+      <div class="p-6 sm:p-8">
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h2 class="text-xl sm:text-2xl font-bold">Suggest an Office</h2>
+            <p class="text-sm opacity-60">Help the community by adding missing offices</p>
+          </div>
+          <button onclick="hideSuggestOfficeModal()" class="p-2 hover:bg-[var(--bg)] rounded-xl">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <form onsubmit="handleSuggestOffice(event)" class="space-y-4">
+          <div>
+            <label class="block text-sm opacity-70 mb-1">Office Name *</label>
+            <input type="text" id="suggest-name" required class="w-full px-4 py-3 bg-[var(--bg)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[var(--accent)]" placeholder="e.g., LTO Consolacion Satellite Office">
+          </div>
+          <div>
+            <label class="block text-sm opacity-70 mb-1">Office Type *</label>
+            <select id="suggest-type" required class="w-full px-4 py-3 bg-[var(--bg)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[var(--accent)]">
+              <option value="">Select office type</option>
+              <option value="lto">LTO</option>
+              <option value="sss">SSS</option>
+              <option value="philhealth">PhilHealth</option>
+              <option value="nbi">NBI</option>
+              <option value="dfa">DFA/Passport</option>
+              <option value="bir">BIR</option>
+              <option value="pagibig">Pag-IBIG</option>
+              <option value="owwa">OWWA</option>
+              <option value="police">Police Clearance</option>
+              <option value="barangay">Barangay Hall</option>
+              <option value="cityhall">City/Municipal Hall</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm opacity-70 mb-1">City/Municipality *</label>
+            <input type="text" id="suggest-city" required class="w-full px-4 py-3 bg-[var(--bg)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[var(--accent)]" placeholder="e.g., Consolacion, Cebu">
+          </div>
+          <div>
+            <label class="block text-sm opacity-70 mb-1">Complete Address *</label>
+            <textarea id="suggest-address" required rows="2" class="w-full px-4 py-3 bg-[var(--bg)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[var(--accent)] resize-none" placeholder="Building name, street, barangay, city"></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm opacity-70 mb-1">Your Name *</label>
+              <input type="text" id="suggest-submitter" required class="w-full px-4 py-3 bg-[var(--bg)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[var(--accent)]" placeholder="Your name">
+            </div>
+            <div>
+              <label class="block text-sm opacity-70 mb-1">Contact (optional)</label>
+              <input type="text" id="suggest-contact" class="w-full px-4 py-3 bg-[var(--bg)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[var(--accent)]" placeholder="Email or phone">
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm opacity-70 mb-1">Additional Notes (optional)</label>
+            <textarea id="suggest-notes" rows="2" class="w-full px-4 py-3 bg-[var(--bg)] border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-[var(--accent)] resize-none" placeholder="Operating hours, requirements, or any helpful info"></textarea>
+          </div>
+          <div class="flex gap-3">
+            <button type="button" onclick="hideSuggestOfficeModal()" class="flex-1 py-3 rounded-xl border border-[var(--border)] hover:bg-[var(--bg)] font-medium transition">
+              Cancel
+            </button>
+            <button type="submit" class="flex-1 bg-[var(--accent)] hover:bg-cyan-300 text-[#0a0f1c] py-3 rounded-xl font-semibold transition">
+              Submit Suggestion
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAILED CHECKLIST MODAL -->
+  <div onclick="if(event.target.id === 'modal-backdrop')hideModal()"
+       id="modal-backdrop"
+       class="hidden fixed inset-0 bg-black/70 z-[9998] flex items-center justify-center p-4">
+
+    <div onclick="event.stopImmediatePropagation()"
+         class="bg-[var(--card)] border border-[var(--border)] rounded-2xl sm:rounded-3xl max-w-4xl w-full max-h-[92vh] overflow-hidden flex flex-col">
+
+      <div class="px-6 sm:px-8 pt-6 sm:pt-8 pb-4 sm:pb-6 border-b border-[var(--border)] flex items-start justify-between gap-4">
+        <div class="min-w-0">
+          <h2 id="modal-title" class="text-xl sm:text-2xl sm:text-3xl font-bold truncate"></h2>
+          <p id="modal-subtitle" class="text-[var(--accent)] text-sm mt-1 truncate"></p>
+        </div>
+        <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          <button onclick="printChecklist()" class="flex items-center gap-x-2 text-xs sm:text-sm font-medium border border-[var(--border)] hover:bg-[var(--bg)] px-3 sm:px-5 h-9 sm:h-10 rounded-xl">
+            <i class="fas fa-print"></i> <span class="hidden sm:inline">PRINT</span>
+          </button>
+          <button onclick="copyChecklist()" class="flex items-center gap-x-2 text-xs sm:text-sm font-medium border border-[var(--border)] hover:bg-[var(--bg)] px-3 sm:px-5 h-9 sm:h-10 rounded-xl">
+            <i class="fas fa-copy"></i> <span class="hidden sm:inline">COPY</span>
+          </button>
+          <button onclick="hideModal()" class="text-2xl sm:text-4xl leading-none opacity-60 hover:opacity-100 p-2">×</button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="px-4 sm:px-6 flex border-b border-[var(--border)] text-xs sm:text-sm font-medium overflow-x-auto">
+        <button onclick="switchTab(0)" id="tab-0" class="tab-active px-4 sm:px-6 py-3 sm:py-4 whitespace-nowrap">DOCUMENTS</button>
+        <button onclick="switchTab(1)" id="tab-1" class="px-4 sm:px-6 py-3 sm:py-4 opacity-60 hover:opacity-100 whitespace-nowrap">STEPS</button>
+        <button onclick="switchTab(2)" id="tab-2" class="px-4 sm:px-6 py-3 sm:py-4 opacity-60 hover:opacity-100 whitespace-nowrap">FEES & TIME</button>
+        <button onclick="switchTab(3)" id="tab-3" class="px-4 sm:px-6 py-3 sm:py-4 opacity-60 hover:opacity-100 whitespace-nowrap">TIPS</button>
+        <button onclick="switchTab(4)" id="tab-4" class="px-4 sm:px-6 py-3 sm:py-4 opacity-60 hover:opacity-100 whitespace-nowrap">BRANCHES</button>
+      </div>
+
+      <div id="modal-content" class="flex-1 overflow-auto p-4 sm:p-6 sm:p-8 text-sm sm:text-base"></div>
+    </div>
+  </div>
+
+  <!-- INSTALL PWA PROMPT -->
+  <div id="pwa-install-prompt" class="hidden fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow-xl z-[9997] animate-in">
+    <div class="flex items-start gap-3">
+      <div class="w-12 h-12 flex items-center justify-center flex-shrink-0">
+        <svg width="48" height="48" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 4C6 2.89543 6.89543 2 8 2H16L22 8V24C22 25.1046 21.1046 26 20 26H8C6.89543 26 6 25.1046 6 24V4Z" fill="var(--accent)"/>
+          <path d="M16 2V8H22" fill="var(--theme-accent-darker)"/>
+          <circle cx="14" cy="15" r="6" fill="var(--theme-bg)"/>
+          <path d="M11 15L13 17L17 13" stroke="var(--theme-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <circle cx="10" cy="10" r="1" fill="var(--theme-accent)"/>
+          <circle cx="14" cy="10" r="1" fill="var(--theme-accent)"/>
+          <circle cx="18" cy="10" r="1" fill="var(--theme-accent)"/>
+        </svg>
+      </div>
+      <div class="flex-1 min-w-0">
+        <h4 class="font-semibold">Install App</h4>
+        <p class="text-xs opacity-60 mt-1">Add GovHub to your home screen for quick access</p>
+        <div class="flex gap-2 mt-3">
+          <button onclick="installPWA()" class="px-4 py-2 bg-[var(--accent)] text-[#0a0f1c] rounded-lg text-sm font-medium">Install</button>
+          <button onclick="dismissPWA()" class="px-4 py-2 bg-[var(--bg)] rounded-lg text-sm">Later</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MOBILE BOTTOM NAVIGATION -->
+  <nav id="mobile-bottom-nav" class="lg:hidden fixed bottom-0 left-0 right-0 bg-[var(--card)] border-t border-[var(--border)] z-50 safe-area-bottom">
+    <div class="flex items-center justify-around py-2 pb-4 sm:pb-2">
+      <!-- Home -->
+      <button onclick="navigateToSection('home')" class="mobile-nav-btn active flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition" data-section="home">
+        <i class="fas fa-home text-lg"></i>
+        <span class="text-[10px] font-medium">Home</span>
+      </button>
+
+      <!-- Map -->
+      <button onclick="navigateToSection('map')" class="mobile-nav-btn flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition" data-section="map">
+        <i class="fas fa-map-marked-alt text-lg"></i>
+        <span class="text-[10px] font-medium">Map</span>
+      </button>
+
+      <!-- Checklist -->
+      <button onclick="navigateToSection('checklist')" class="mobile-nav-btn flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition relative" data-section="checklist">
+        <div class="relative">
+          <i class="fas fa-clipboard-list text-lg"></i>
+          <span class="absolute -top-1 -right-1 w-2 h-2 bg-[var(--accent)] rounded-full"></span>
+        </div>
+        <span class="text-[10px] font-medium">Checklist</span>
+      </button>
+
+      <!-- Submit -->
+      <button onclick="navigateToSection('submit')" class="mobile-nav-btn flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition" data-section="submit">
+        <i class="fas fa-plus-circle text-lg"></i>
+        <span class="text-[10px] font-medium">Submit</span>
+      </button>
+
+      <!-- More -->
+      <button onclick="toggleMobileMenu()" class="mobile-nav-btn flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition" data-section="more">
+        <i class="fas fa-ellipsis-h text-lg"></i>
+        <span class="text-[10px] font-medium">More</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- TOAST CONTAINER -->
+  <div id="toast-container" class="fixed bottom-20 sm:bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 z-[10000] space-y-2"></div>
+
+  <!-- FOOTER -->
+  <footer class="bg-[var(--bg)] text-xs py-6 sm:py-8 border-t border-[var(--border)] opacity-60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div class="mb-2">
+        GovHub • Cebu Prototype v7.0 • Simplified without authentication
+      </div>
+      <div class="flex justify-center gap-4 text-[10px] sm:text-xs">
+        <a href="#" class="hover:opacity-100">Terms</a>
+        <a href="#" class="hover:opacity-100">Privacy</a>
+        <a href="#" class="hover:opacity-100">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Leaflet JS for OpenStreetMap -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- External JavaScript -->
+  <script src="app.js"></script>
+</body>
+</html>
