@@ -1,8 +1,13 @@
 import express from 'express'
 import cors from 'cors'
 import { createClient } from '@supabase/supabase-js'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 const PORT = Number(process.env.PORT || 3000)
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const staticRoot = __dirname
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE_KEY
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || '')
@@ -20,7 +25,16 @@ if (!hasSupabaseConfig) {
 const app = express()
 app.use(cors())
 app.use(express.json())
-app.use(express.static(process.cwd()))
+
+app.get('/', (req, res) => {
+  return res.sendFile(path.join(staticRoot, 'admin.html'))
+})
+
+app.get('/admin', (req, res) => {
+  return res.sendFile(path.join(staticRoot, 'admin.html'))
+})
+
+app.use(express.static(staticRoot, { index: false }))
 
 function requireSupabase(req, res, next) {
   if (!supabase) {
