@@ -68,7 +68,7 @@ html.light {
 
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  background: linear-gradient(135deg, var(--theme-bg-start) 0%, var(--theme-bg-end) 50%, #0c1222 100%);
+  background: linear-gradient(180deg, var(--theme-bg-start) 0%, var(--theme-bg-end) 50%, #0c1222 100%);
   background-attachment: fixed;
   background-size: cover;
   color: var(--theme-text);
@@ -500,11 +500,11 @@ input:checked + .toggle-slider:before {
 
 /* Navbar gradient */
 nav.nav-gradient {
-  background: linear-gradient(135deg, #0a0f1c 0%, #0f172a 100%);
+  background: linear-gradient(180deg, #0a0f1c 0%, #0f172a 100%);
 }
 
 html.light nav.nav-gradient {
-  background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+  background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);
 }
 
 /* Smooth hover effect for mobile nav buttons */
