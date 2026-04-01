@@ -76,6 +76,10 @@ body {
   min-height: 100vh;
 }
 
+html.light body {
+  background: #ffffff;
+}
+
 .logo-font {
   font-family: 'Space Grotesk', sans-serif;
 }
@@ -105,6 +109,14 @@ body::before {
               radial-gradient(circle at 70% 80%, rgba(16, 185, 129, 0.02) 0%, transparent 50%);
   pointer-events: none;
   z-index: -1;
+}
+
+html.light body::before {
+  display: none;
+}
+
+html.light .admin-shell-bg {
+  background: #ffffff;
 }
 
 /* Ensure main content sits above glow */

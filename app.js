@@ -139,6 +139,26 @@ const GeoLocation = {
 // APP STATE
 // ===========================================
 let currentTheme = DB.get('theme') || 'dark'
+
+// Track page visit (lightweight). Records to Supabase via server endpoint /api/track-visit
+;(function trackVisit(){
+  try {
+    const payload = {
+      session_id: localStorage.getItem('govhub_session') || null,
+      page_path: window.location.pathname,
+      referrer: document.referrer || null,
+      user_agent: navigator.userAgent || null,
+      metadata: { hostname: location.hostname }
+    }
+    // send but don't block
+    fetch('/api/track-visit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(()=>{})
+  } catch (e) { console.error('trackVisit failed', e) }
+})()
+
 let currentLocation = DB.get('location') || 'Locations'
 let currentFilter = 'all'
 let searchQuery = ''
@@ -173,35 +193,35 @@ const cities = ["Locations", "Cebu City", "Mandaue", "Lapu-Lapu", "Consolacion",
 const officeLocations = {
   // LTO Offices
   lto: [
-    { id: 'lto-consolacion', name: 'LTO Consolacion Extension Office', address: '2nd Floor (near Cinema area), SM City Consolacion, Consolacion, Cebu', lat: 10.3758, lng: 123.9572, type: 'lto' },
-    { id: 'lto-mandaue', name: 'LTO Mandaue District Office', address: '3rd Floor, City Time Square 2 / J Center Mall, Tipolo, Mandaue City', lat: 10.3236, lng: 123.9222, type: 'lto' },
-    { id: 'lto-cebu-mega', name: 'LTO Cebu City Mega Licensing Center', address: 'SM Seaside City, Seaview Wing, Ground Floor, Cebu South Coastal Road, Cebu City', lat: 10.2800, lng: 123.8800, type: 'lto' },
-    { id: 'lto-cebu-district', name: 'LTO Cebu City District Office', address: '4th Floor, Robinsons Galleria Cebu, General Maxilom Avenue, Cebu City', lat: 10.3150, lng: 123.8850, type: 'lto' },
+    { id: 'lto-consolacion', name: 'LTO Consolacion Extension Office', address: '2nd Floor (near Cinema 1 & 2), SM City Consolacion, Consolacion, Cebu', lat: 10.3769, lng: 123.9569, type: 'lto' },
+    { id: 'lto-mandaue', name: 'LTO Mandaue District Office', address: '3rd Floor, City Time Square 2, Tipolo, Mandaue City', lat: 10.3236, lng: 123.9222, type: 'lto' },
+    { id: 'lto-cebu-mega', name: 'LTO Cebu City Mega Licensing Center', address: 'SM Seaside City, Seaview Wing, Ground Floor, Cebu South Coastal Road (SRP), Barangay Mambaling, Cebu City', lat: 10.2800, lng: 123.8800, type: 'lto' },
+    { id: 'lto-cebu-district', name: 'LTO Cebu City District Office', address: '4th Floor, Robinsons Galleria Cebu, General Maxilom Avenue cor. Sergio Osmeña Blvd., Cebu City', lat: 10.3150, lng: 123.8850, type: 'lto' },
     { id: 'lto-lapulapu', name: 'LTO Lapu-Lapu District Office', address: 'City Hall Drive, Pajo, Lapu-Lapu City', lat: 10.3175, lng: 123.9631, type: 'lto' },
-    { id: 'lto-talisay', name: 'LTO Talisay Extension', address: 'Natalio B. Bacalso Highway, Tabunok, Talisay City', lat: 10.2658, lng: 123.8420, type: 'lto' }
+    { id: 'lto-talisay', name: 'LTO Talisay Extension', address: 'Natalio B. Bacalso Highway (near Tabunok), Talisay City', lat: 10.2658, lng: 123.8420, type: 'lto' }
   ],
   // SSS Offices
   sss: [
-    { id: 'sss-cebu-main', name: 'SSS Cebu Main Branch', address: 'SSS Building, Brgy. Kalubihan, Osmeña Boulevard, Cebu City', lat: 10.2985, lng: 123.8967, type: 'sss' },
-    { id: 'sss-cebu-nra', name: 'SSS Cebu NRA', address: 'Level 3, Robinsons Galleria Cebu, General Maxilom Ave, Cebu City', lat: 10.2985, lng: 123.8966, type: 'sss' },
-    { id: 'sss-mandaue', name: 'SSS Mandaue Branch', address: '2nd Floor, Parkmall, Ouano Avenue, Mandaue City', lat: 10.3252, lng: 123.9339, type: 'sss' },
-    { id: 'sss-lapulapu', name: 'SSS Lapu-Lapu Branch', address: 'Ground Floor Annex, Gaisano Mactan Island Mall, Pajo, Lapu-Lapu City', lat: 10.3175, lng: 123.9631, type: 'sss' },
-    { id: 'sss-talisay', name: 'SSS Talisay Branch', address: 'Gaisano Grand Fiesta Mall, Tabunok, Talisay City', lat: 10.2658, lng: 123.8420, type: 'sss' },
-    { id: 'sss-danao', name: 'SSS Danao Branch', address: 'Danao City Mall, Oliver Sr. Extension, Danao City', lat: 10.5187, lng: 124.0265, type: 'sss' },
-    { id: 'sss-toledo', name: 'SSS Toledo Branch', address: '2nd Floor, TE Building, Diosdado Macapagal Highway, Toledo City', lat: 10.3862, lng: 123.6496, type: 'sss' },
-    { id: 'sss-bogo', name: 'SSS Bogo Branch', address: 'Osing Bldg., Sim Bogo Business Park, P. Rodriguez St., Bogo City', lat: 11.0000, lng: 124.0000, type: 'sss' }
+    { id: 'sss-cebu-main', name: 'SSS Cebu Main Branch', address: 'SSS Building, Brgy. Kalubihan, Osmeña Boulevard, Cebu City', lat: 10.298513, lng: 123.896675, type: 'sss' },
+    { id: 'sss-cebu-nra', name: 'SSS Cebu NRA', address: 'Level 3, Robinsons Galleria Cebu, General Maxilom Avenue cor. Osmeña Blvd., North Reclamation Area, Cebu City', lat: 10.298556, lng: 123.896606, type: 'sss' },
+    { id: 'sss-mandaue', name: 'SSS Mandaue Branch', address: '2nd Floor, Parkmall, Ouano Avenue, Mandaue Reclamation Area, Mandaue City', lat: 10.325227, lng: 123.933853, type: 'sss' },
+    { id: 'sss-lapulapu', name: 'SSS Lapu-Lapu Branch', address: 'Ground Floor Annex Bldg., Gaisano Mactan Island Mall, Pajo, Lapu-Lapu City', lat: 10.317515, lng: 123.963119, type: 'sss' },
+    { id: 'sss-talisay', name: 'SSS Talisay Branch', address: 'Rosalie Bldg., Gaisano Grand Fiesta Mall, Highway, Tabunok, Talisay City', lat: 10.265762, lng: 123.841986, type: 'sss' },
+    { id: 'sss-danao', name: 'SSS Danao Branch', address: 'City Mall Danao, Oliver Sr. Extension cor. F. Ralota St., Poblacion, Danao City', lat: 10.518662, lng: 124.026480, type: 'sss' },
+    { id: 'sss-toledo', name: 'SSS Toledo Branch', address: '2nd Floor, TE Bldg., Diosdado Macapagal Highway, Sangi, Toledo City', lat: 10.386159, lng: 123.649634, type: 'sss' },
+    { id: 'sss-bogo', name: 'SSS Bogo Branch', address: 'G/F and 2/F, Osing Bldg., Sim Bogo Business Park, P. Rodriguez St., Bogo City', lat: 11.049168, lng: 124.004107, type: 'sss' }
   ],
   // PhilHealth Offices
   philhealth: [
-    { id: 'philhealth-ro7', name: 'PhilHealth Regional Office 7', address: '7th & 8th Floor, Skytower, N. Escario Street corner Acacia Street, Cebu City', lat: 10.3185, lng: 123.8920, type: 'philhealth' },
-    { id: 'philhealth-mandaue', name: 'PhilHealth Mandaue LHIO', address: '2nd Floor, Parkmall, Ouano Avenue, Mandaue City', lat: 10.3252, lng: 123.9339, type: 'philhealth' },
-    { id: 'philhealth-lapulapu', name: 'PhilHealth Express / LHIO Lapu-Lapu', address: 'Near Gaisano Mactan or City Hall area, Lapu-Lapu City', lat: 10.3175, lng: 123.9631, type: 'philhealth' }
+    { id: 'philhealth-ro7', name: 'PhilHealth Regional Office 7', address: '7th & 8th Floor, Skytower, N. Escario Street cor. Acacia Street, Cebu City', lat: 10.3185, lng: 123.8920, type: 'philhealth' },
+    { id: 'philhealth-mandaue', name: 'PhilHealth Mandaue LHIO', address: '2nd Floor, Parkmall, Ouano Avenue, Mandaue Reclamation Area, Mandaue City', lat: 10.3252, lng: 123.9339, type: 'philhealth' },
+    { id: 'philhealth-lapulapu', name: 'PhilHealth Express / LHIO Lapu-Lapu', address: 'Gaisano Mactan Island Mall, Pajo, Lapu-Lapu City', lat: 10.317515, lng: 123.963119, type: 'philhealth' }
   ],
   // NBI Offices
   nbi: [
-    { id: 'nbi-ceviro', name: 'NBI Central Visayas Regional Office', address: 'Capitol Site, 5 N. Escario Street, Cebu City', lat: 10.3100, lng: 123.8900, type: 'nbi' },
-    { id: 'nbi-mandaue', name: 'NBI Mandaue Satellite', address: 'Near J Centre Mall / A.S. Fortuna Street, Mandaue City', lat: 10.3230, lng: 123.9300, type: 'nbi' },
-    { id: 'nbi-ayala', name: 'NBI Ayala Cebu Satellite', address: 'Ayala Center Cebu, Cardinal Rosales Ave, Cebu City', lat: 10.3180, lng: 123.9020, type: 'nbi' }
+    { id: 'nbi-ceviro', name: 'NBI Central Visayas Regional Office (CEVRO)', address: 'Capitol Site, 5 N. Escario Street, Cebu City', lat: 10.3100, lng: 123.8900, type: 'nbi' },
+    { id: 'nbi-mandaue', name: 'NBI Mandaue Satellite', address: '3rd Floor, J Center Mall, A.S. Fortuna Street, Bakilid, Mandaue City', lat: 10.3230, lng: 123.9300, type: 'nbi' },
+    { id: 'nbi-ayala', name: 'NBI Ayala Cebu Satellite', address: 'Ayala Center Cebu, Cardinal Rosales Avenue, Cebu City', lat: 10.3180, lng: 123.9020, type: 'nbi' }
   ],
   // DFA Offices
   dfa: [
@@ -209,73 +229,61 @@ const officeLocations = {
   ],
   // City/Municipal Halls
   barangay: [
-    // Cities
+    // Cities - Metro Cebu
     { id: 'ch-cebu-city', name: 'Cebu City Hall', address: 'Dr. Jose P. Rizal St. cor. M.C. Briones St., Brgy. Santo Niño, Cebu City', lat: 10.2947, lng: 123.9023, type: 'barangay' },
+    { id: 'ch-mandaue', name: 'Mandaue City Hall', address: 'Mandaue City proper (central area)', lat: 10.3230, lng: 123.9220, type: 'barangay' },
     { id: 'ch-lapulapu', name: 'Lapu-Lapu City Hall', address: 'City Hall Drive, Pajo, Lapu-Lapu City', lat: 10.3175, lng: 123.9631, type: 'barangay' },
-    { id: 'ch-mandaue', name: 'Mandaue City Hall', address: 'Mandaue City proper (near City Center)', lat: 10.3230, lng: 123.9220, type: 'barangay' },
-    { id: 'ch-bogo', name: 'Bogo City Hall', address: 'Bogo City proper', lat: 11.0000, lng: 124.0000, type: 'barangay' },
-    { id: 'ch-carcar', name: 'Carcar City Hall', address: 'Carcar City proper', lat: 10.1000, lng: 123.6000, type: 'barangay' },
-    { id: 'ch-danao', name: 'Danao City Hall', address: 'Poblacion, Danao City', lat: 10.5200, lng: 124.0270, type: 'barangay' },
-    { id: 'ch-naga', name: 'Naga City Hall', address: 'Naga City proper', lat: 10.2000, lng: 123.7500, type: 'barangay' },
     { id: 'ch-talisay', name: 'Talisay City Hall', address: 'Tabunok, Talisay City', lat: 10.2650, lng: 123.8400, type: 'barangay' },
-    { id: 'ch-toledo', name: 'Toledo City Hall', address: 'Poblacion, Toledo City', lat: 10.3862, lng: 123.6496, type: 'barangay' },
-    // Municipal Halls - Metro Cebu Area
-    { id: 'mh-consolacion', name: 'Consolacion Municipal Hall', address: 'Cebu North Road, Poblacion, Consolacion', lat: 10.3758, lng: 123.9572, type: 'barangay' },
-    { id: 'mh-liloan', name: 'Liloan Municipal Hall', address: 'Poblacion, Liloan', lat: 10.4000, lng: 123.9500, type: 'barangay' },
-    { id: 'mh-minglanilla', name: 'Minglanilla Municipal Hall', address: 'Poblacion, Minglanilla', lat: 10.2500, lng: 123.8000, type: 'barangay' },
-    { id: 'mh-cordova', name: 'Cordova Municipal Hall', address: 'Poblacion, Cordova', lat: 10.2500, lng: 123.9500, type: 'barangay' },
-    { id: 'mh-compostela', name: 'Compostela Municipal Hall', address: 'Poblacion, Compostela', lat: 10.4500, lng: 123.9500, type: 'barangay' },
-    { id: 'mh-carmen', name: 'Carmen Municipal Hall', address: 'Poblacion, Carmen', lat: 10.5800, lng: 123.9500, type: 'barangay' },
-    { id: 'mh-catmon', name: 'Catmon Municipal Hall', address: 'Poblacion, Catmon', lat: 10.7200, lng: 123.9500, type: 'barangay' },
-    { id: 'mh-san-fernando', name: 'San Fernando Municipal Hall', address: 'Poblacion, San Fernando', lat: 10.1700, lng: 123.7000, type: 'barangay' },
+    { id: 'ch-consolacion', name: 'Consolacion Municipal Hall', address: 'Cebu North Road, Poblacion, Consolacion', lat: 10.3758, lng: 123.9572, type: 'barangay' },
+    // Cities - Component Cities
+    { id: 'ch-bogo', name: 'Bogo City Hall', address: 'Poblacion, Bogo City', lat: 11.0492, lng: 124.0041, type: 'barangay' },
+    { id: 'ch-carcar', name: 'Carcar City Hall', address: 'Poblacion, Carcar City', lat: 10.1067, lng: 123.6092, type: 'barangay' },
+    { id: 'ch-danao', name: 'Danao City Hall', address: 'Poblacion, Danao City', lat: 10.5208, lng: 124.0272, type: 'barangay' },
+    { id: 'ch-naga', name: 'Naga City Hall', address: 'Poblacion, Naga City', lat: 10.2089, lng: 123.7569, type: 'barangay' },
+    { id: 'ch-toledo', name: 'Toledo City Hall', address: 'Poblacion, Toledo City', lat: 10.3778, lng: 123.6381, type: 'barangay' },
     // Municipal Halls - North Cebu
-    { id: 'mh-bantayan', name: 'Bantayan Municipal Hall', address: 'Poblacion, Bantayan', lat: 11.1700, lng: 123.7200, type: 'barangay' },
-    { id: 'mh-daanbantayan', name: 'Daanbantayan Municipal Hall', address: 'Poblacion, Daanbantayan', lat: 11.2300, lng: 124.0300, type: 'barangay' },
-    { id: 'mh-madridejos', name: 'Madridejos Municipal Hall', address: 'Poblacion, Madridejos', lat: 11.2600, lng: 123.7300, type: 'barangay' },
-    { id: 'mh-medellin', name: 'Medellin Municipal Hall', address: 'Poblacion, Medellin', lat: 11.1300, lng: 123.9600, type: 'barangay' },
-    { id: 'mh-san-remigio', name: 'San Remigio Municipal Hall', address: 'Poblacion, San Remigio', lat: 11.0000, lng: 123.9400, type: 'barangay' },
-    { id: 'mh-santa-fe', name: 'Santa Fe Municipal Hall', address: 'Santa Fe (Bantayan Island)', lat: 11.1500, lng: 123.8000, type: 'barangay' },
-    { id: 'mh-tabogon', name: 'Tabogon Municipal Hall', address: 'Poblacion, Tabogon', lat: 10.9500, lng: 124.0300, type: 'barangay' },
-    { id: 'mh-tabuelan', name: 'Tabuelan Municipal Hall', address: 'Poblacion, Tabuelan', lat: 10.8200, lng: 123.8700, type: 'barangay' },
-    { id: 'mh-borbon', name: 'Borbon Municipal Hall', address: 'Poblacion, Borbon', lat: 10.8300, lng: 124.0000, type: 'barangay' },
-    { id: 'mh-sogod', name: 'Sogod Municipal Hall', address: 'Poblacion, Sogod', lat: 10.7500, lng: 124.0000, type: 'barangay' },
-    { id: 'mh-tuburan', name: 'Tuburan Municipal Hall', address: 'Poblacion, Tuburan', lat: 10.8000, lng: 123.8500, type: 'barangay' },
+    { id: 'mh-liloan', name: 'Liloan Municipal Hall', address: 'Poblacion, Liloan', lat: 10.3992, lng: 123.9992, type: 'barangay' },
+    { id: 'mh-tuburan', name: 'Tuburan Municipal Hall', address: 'Poblacion, Tuburan', lat: 10.7306, lng: 123.8228, type: 'barangay' },
+    { id: 'mh-borbon', name: 'Borbon Municipal Hall', address: 'Poblacion, Borbon', lat: 10.8333, lng: 124.0000, type: 'barangay' },
+    { id: 'mh-catmon', name: 'Catmon Municipal Hall', address: 'Poblacion, Catmon', lat: 10.6667, lng: 123.9500, type: 'barangay' },
+    { id: 'mh-sogod', name: 'Sogod Municipal Hall', address: 'Poblacion, Sogod', lat: 10.7500, lng: 123.9833, type: 'barangay' },
+    { id: 'mh-carmen', name: 'Carmen Municipal Hall', address: 'Poblacion, Carmen', lat: 10.5833, lng: 124.0167, type: 'barangay' },
+    { id: 'mh-compostela', name: 'Compostela Municipal Hall', address: 'Poblacion, Compostela', lat: 10.4500, lng: 123.9833, type: 'barangay' },
+    { id: 'mh-asturias', name: 'Asturias Municipal Hall', address: 'Poblacion, Asturias', lat: 10.5717, lng: 123.7175, type: 'barangay' },
+    { id: 'mh-balamban', name: 'Balamban Municipal Hall', address: 'Poblacion, Balamban', lat: 10.5039, lng: 123.7153, type: 'barangay' },
     // Municipal Halls - West & South Cebu
-    { id: 'mh-asturias', name: 'Asturias Municipal Hall', address: 'Poblacion, Asturias', lat: 10.6000, lng: 123.7500, type: 'barangay' },
-    { id: 'mh-balamban', name: 'Balamban Municipal Hall', address: 'Poblacion, Balamban', lat: 10.5000, lng: 123.7000, type: 'barangay' },
-    { id: 'mh-barili', name: 'Barili Municipal Hall', address: 'Poblacion, Barili', lat: 10.1000, lng: 123.5000, type: 'barangay' },
-    { id: 'mh-dumanjug', name: 'Dumanjug Municipal Hall', address: 'Poblacion, Dumanjug', lat: 10.0600, lng: 123.4300, type: 'barangay' },
-    { id: 'mh-ruiz aka ronda', name: 'Ronda Municipal Hall', address: 'Poblacion, Ronda', lat: 9.8000, lng: 123.4000, type: 'barangay' },
-    { id: 'mh-alcantara', name: 'Alcantara Municipal Hall', address: 'Poblacion, Alcantara', lat: 10.0000, lng: 123.4000, type: 'barangay' },
+    { id: 'mh-minglanilla', name: 'Minglanilla Municipal Hall', address: 'Poblacion, Minglanilla', lat: 10.2450, lng: 123.7967, type: 'barangay' },
+    { id: 'mh-cordova', name: 'Cordova Municipal Hall', address: 'Poblacion, Cordova', lat: 10.2531, lng: 123.9514, type: 'barangay' },
+    { id: 'mh-san-fernando', name: 'San Fernando Municipal Hall', address: 'Poblacion, San Fernando', lat: 10.1833, lng: 123.7075, type: 'barangay' },
+    { id: 'mh-barili', name: 'Barili Municipal Hall', address: 'Poblacion, Barili', lat: 10.1167, lng: 123.5333, type: 'barangay' },
+    { id: 'mh-dumanjug', name: 'Dumanjug Municipal Hall', address: 'Poblacion, Dumanjug', lat: 10.0667, lng: 123.4833, type: 'barangay' },
+    { id: 'mh-pinamungajan', name: 'Pinamungajan Municipal Hall', address: 'Poblacion, Pinamungajan', lat: 10.2667, lng: 123.5833, type: 'barangay' },
     { id: 'mh-moalboal', name: 'Moalboal Municipal Hall', address: 'Poblacion, Moalboal', lat: 9.9500, lng: 123.4000, type: 'barangay' },
-    { id: 'mh-badian', name: 'Badian Municipal Hall', address: 'Poblacion, Badian', lat: 9.8700, lng: 123.4000, type: 'barangay' },
-    { id: 'mh-alegria', name: 'Alegria Municipal Hall', address: 'Poblacion, Alegria', lat: 9.7500, lng: 123.4000, type: 'barangay' },
-    { id: 'mh-ginatilan', name: 'Ginatilan Municipal Hall', address: 'Poblacion, Ginatilan', lat: 9.6000, lng: 123.3500, type: 'barangay' },
-    { id: 'mh-malabuyoc', name: 'Malabuyoc Municipal Hall', address: 'Poblacion, Malabuyoc', lat: 9.6500, lng: 123.3200, type: 'barangay' },
-    { id: 'mh-samboan', name: 'Samboan Municipal Hall', address: 'Poblacion, Samboan', lat: 9.5300, lng: 123.3000, type: 'barangay' },
-    { id: 'mh-santander', name: 'Santander Municipal Hall', address: 'Poblacion, Santander', lat: 9.4500, lng: 123.3000, type: 'barangay' },
-    { id: 'mh-oslob', name: 'Oslob Municipal Hall', address: 'Poblacion, Oslob', lat: 9.5500, lng: 123.4000, type: 'barangay' },
-    { id: 'mh-boljoon', name: 'Boljoon Municipal Hall', address: 'Poblacion, Boljoon', lat: 9.6500, lng: 123.4800, type: 'barangay' },
-    { id: 'mh-dalaguete', name: 'Dalaguete Municipal Hall', address: 'Poblacion, Dalaguete', lat: 9.7500, lng: 123.5300, type: 'barangay' },
+    { id: 'mh-alegria', name: 'Alegria Municipal Hall', address: 'Poblacion, Alegria', lat: 9.7333, lng: 123.4000, type: 'barangay' },
+    { id: 'mh-malabuyoc', name: 'Malabuyoc Municipal Hall', address: 'Poblacion, Malabuyoc', lat: 9.6500, lng: 123.3167, type: 'barangay' },
+    { id: 'mh-badian', name: 'Badian Municipal Hall', address: 'Poblacion, Badian', lat: 9.8667, lng: 123.4000, type: 'barangay' },
+    { id: 'mh-ginatilan', name: 'Ginatilan Municipal Hall', address: 'Poblacion, Ginatilan', lat: 9.6000, lng: 123.3000, type: 'barangay' },
+    { id: 'mh-samboan', name: 'Samboan Municipal Hall', address: 'Poblacion, Samboan', lat: 9.5333, lng: 123.3000, type: 'barangay' },
+    { id: 'mh-santander', name: 'Santander Municipal Hall', address: 'Poblacion, Santander', lat: 9.4667, lng: 123.3333, type: 'barangay' },
+    { id: 'mh-oslob', name: 'Oslob Municipal Hall', address: 'Poblacion, Oslob', lat: 9.5333, lng: 123.4000, type: 'barangay' },
+    { id: 'mh-boljoon', name: 'Boljoon Municipal Hall', address: 'Poblacion, Boljoon', lat: 9.6333, lng: 123.4833, type: 'barangay' },
     { id: 'mh-alcoy', name: 'Alcoy Municipal Hall', address: 'Poblacion, Alcoy', lat: 9.7000, lng: 123.5000, type: 'barangay' },
-    { id: 'mh-argao', name: 'Argao Municipal Hall', address: 'Poblacion, Argao', lat: 9.9000, lng: 123.6000, type: 'barangay' },
-    { id: 'mh-sibonga', name: 'Sibonga Municipal Hall', address: 'Poblacion, Sibonga', lat: 10.0300, lng: 123.6000, type: 'barangay' },
-    { id: 'mh-aloguinsan', name: 'Aloguinsan Municipal Hall', address: 'Poblacion, Aloguinsan', lat: 10.2200, lng: 123.5500, type: 'barangay' },
-    { id: 'mh-pinamungajan', name: 'Pinamungajan Municipal Hall', address: 'Poblacion, Pinamungajan', lat: 10.2700, lng: 123.6000, type: 'barangay' },
-    // Camotes Islands
-    { id: 'mh-poro', name: 'Poro Municipal Hall', address: 'Poblacion, Poro (Camotes)', lat: 10.6500, lng: 124.4000, type: 'barangay' },
-    { id: 'mh-tudela', name: 'Tudela Municipal Hall', address: 'Poblacion, Tudela (Camotes)', lat: 10.6300, lng: 124.4500, type: 'barangay' }
+    { id: 'mh-ronda', name: 'Ronda Municipal Hall', address: 'Poblacion, Ronda', lat: 9.9833, lng: 123.4167, type: 'barangay' },
+    { id: 'mh-alcantara', name: 'Alcantara Municipal Hall', address: 'Poblacion, Alcantara', lat: 9.9667, lng: 123.4000, type: 'barangay' },
+    { id: 'mh-dalaguete', name: 'Dalaguete Municipal Hall', address: 'Poblacion, Dalaguete', lat: 9.7667, lng: 123.5333, type: 'barangay' },
+    { id: 'mh-sibonga', name: 'Sibonga Municipal Hall', address: 'Poblacion, Sibonga', lat: 9.9833, lng: 123.5667, type: 'barangay' },
+    { id: 'mh-argao', name: 'Argao Municipal Hall', address: 'Poblacion, Argao', lat: 9.8833, lng: 123.6000, type: 'barangay' }
   ]
 }
 
 // Office type icons and colors
 const officeTypeConfig = {
-  lto: { name: 'LTO', color: '#3B82F6', icon: 'fa-car', iconText: 'LTO' },
-  sss: { name: 'SSS', color: '#10B981', icon: 'fa-hand-holding-dollar', iconText: 'SSS' },
-  philhealth: { name: 'PhilHealth', color: '#EF4444', icon: 'fa-heart-pulse', iconText: 'PH' },
-  nbi: { name: 'NBI', color: '#F59E0B', icon: 'fa-fingerprint', iconText: 'NBI' },
-  dfa: { name: 'DFA', color: '#8B5CF6', icon: 'fa-passport', iconText: 'DFA' },
-  barangay: { name: 'City/Municipal Hall', color: '#F97316', icon: 'fa-building-columns', iconText: 'CH' }
+  lto: { name: 'LTO', color: '#3B82F6', icon: 'fa-car', iconText: 'LTO', logo: 'assets/Land_Transportation_Office.svg' },
+  sss: { name: 'SSS', color: '#10B981', icon: 'fa-hand-holding-dollar', iconText: 'SSS', logo: 'assets/Social_Security_System_(SSS).svg.png' },
+  philhealth: { name: 'PhilHealth', color: '#EF4444', icon: 'fa-heart-pulse', iconText: 'PH', logo: 'assets/ph_logo.png' },
+  nbi: { name: 'NBI', color: '#F59E0B', icon: 'fa-fingerprint', iconText: 'NBI', logo: 'assets/National_Bureau_of_Investigation_(NBI).svg.png' },
+  dfa: { name: 'DFA', color: '#8B5CF6', icon: 'fa-passport', iconText: 'DFA', logo: 'assets/Seal_of_the_Department_of_Foreign_Affairs_of_the_Philippines.svg.png' },
+  barangay: { name: 'City/Municipal Hall', color: '#F97316', icon: 'fa-building-columns', iconText: 'CH', logo: 'assets/253-2533880_city-hall-icon.png' }
 }
 
 const allTableRows = [
@@ -816,7 +824,7 @@ function hideSubmissionModal() {
   document.getElementById('submit-details').value = ''
 }
 
-function handleSubmitUpdate(e) {
+async function handleSubmitUpdate(e) {
   e.preventDefault()
 
   const data = {
@@ -827,12 +835,24 @@ function handleSubmitUpdate(e) {
     details: document.getElementById('submit-details').value
   }
 
-  const result = Submissions.add(data)
-  if (result.success) {
-    hideSubmissionModal()
-    showToast('Update submitted! Thank you for helping the community.')
+  // Use Supabase if available, fallback to localStorage
+  if (typeof DB_API !== 'undefined') {
+    const result = await DB_API.submitUpdate(data)
+    if (result.success) {
+      hideSubmissionModal()
+      showToast('Update submitted! Thank you for helping the community.')
+    } else {
+      showToast('Failed to submit. Please try again.', 'error')
+    }
   } else {
-    showToast(result.error, 'error')
+    // Fallback to localStorage
+    const result = Submissions.add(data)
+    if (result.success) {
+      hideSubmissionModal()
+      showToast('Update submitted! Thank you for helping the community.')
+    } else {
+      showToast(result.error, 'error')
+    }
   }
 }
 
@@ -928,7 +948,17 @@ function initMap() {
 }
 
 function createCustomIcon(type) {
-  const config = officeTypeConfig[type]
+  const config = officeTypeConfig[type] || { color: '#9CA3AF', iconText: 'OFF' }
+  // If a logo exists for this office type, use it as the marker (better visibility on the map).
+  if (config.logo) {
+    const html = `
+      <div style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;">
+        <img src="${config.logo}" alt="${config.name}" style="width:36px;height:36px;border-radius:6px;object-fit:cover;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.25)" />
+      </div>
+    `
+    return L.divIcon({ className: 'custom-map-marker', html, iconSize: [40, 40], iconAnchor: [20, 40], popupAnchor: [0, -40] })
+  }
+
   return L.divIcon({
     className: 'custom-map-marker',
     html: `
@@ -1002,15 +1032,18 @@ function showOfficeInfo(office) {
   const config = officeTypeConfig[office.type]
   const panel = document.getElementById('office-info-panel')
   const content = document.getElementById('office-info-content')
+  const officeBadge = config.logo
+    ? `<img src="${config.logo}" alt="${config.name}" style="width:48px;height:48px;object-fit:contain;border-radius:8px;border:1px solid rgba(0,0,0,0.05)" onerror="this.outerHTML='<div style=&quot;width:48px;height:48px;border-radius:8px;background:${config.color};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700&quot;>${config.iconText}</div>'" />`
+    : `<div style="width:48px;height:48px;border-radius:8px;background:${config.color};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700">${config.iconText}</div>`
 
   content.innerHTML = `
     <div class="flex items-start gap-3 mb-3">
-      <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold" style="background: ${config.color}">
-        ${config.iconText}
+      <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white text-lg font-bold" style="background: transparent">
+        ${officeBadge}
       </div>
       <div class="flex-1">
         <h4 class="font-semibold text-base">${office.name}</h4>
-        <p class="text-xs opacity-60">${config.name}</p>
+
       </div>
     </div>
     <div class="space-y-2 text-sm">
@@ -1032,7 +1065,6 @@ function showOfficeInfo(office) {
       </button>
     </div>
   `
-
   panel.classList.remove('hidden')
 }
 

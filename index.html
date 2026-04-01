@@ -94,15 +94,10 @@
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-x-3">
             <svg class="w-9 h-9 flex-shrink-0" width="32" height="32" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <!-- Circular background/hub -->
               <circle cx="14" cy="14" r="13" fill="var(--accent)" opacity="0.15"/>
-              <!-- Document/Paper base -->
               <path d="M7 5C7 3.89543 7.89543 3 9 3H16L21 8V23C21 24.1046 20.1046 25 19 25H9C7.89543 25 7 24.1046 7 23V5Z" fill="var(--accent)"/>
-              <!-- Document folded corner -->
               <path d="M16 3V8H21" fill="var(--theme-accent-darker)"/>
-              <!-- Checkmark circle -->
               <circle cx="14" cy="15" r="5" fill="var(--theme-bg)"/>
-              <!-- Checkmark -->
               <path d="M11 15L12.5 16.5L17 12" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
             </svg>
             <div class="logo-font text-2xl tracking-[-1px]">GovHub</div>
@@ -458,6 +453,52 @@
         <button onclick="filterMapMarkers('barangay')" class="map-filter-btn px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap">Barangay/City Hall</button>
       </div>
 
+      <!-- Map Legend -->
+      <div class="px-4 sm:px-6 py-2 bg-[var(--bg)] border-b border-[var(--border)]">
+        <div class="flex items-center gap-1 text-xs opacity-60 mb-2">
+          <i class="fas fa-info-circle"></i>
+          <span>Legend</span>
+        </div>
+        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-3 items-center">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center bg-white p-1 shadow-sm" style="overflow:hidden;">
+              <img src="assets/Land_Transportation_Office.svg" alt="LTO" style="width:28px;height:28px;object-fit:contain;display:block;" />
+            </div>
+            <span class="text-[10px] sm:text-xs">LTO</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center bg-white p-1 shadow-sm" style="overflow:hidden;">
+              <img src="assets/Social_Security_System_(SSS).svg.png" alt="SSS" style="width:28px;height:28px;object-fit:contain;display:block;" />
+            </div>
+            <span class="text-[10px] sm:text-xs">SSS</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center bg-white p-1 shadow-sm" style="overflow:hidden;">
+              <img src="assets/ph_logo.png" alt="PhilHealth" style="width:28px;height:28px;object-fit:contain;display:block;" />
+            </div>
+            <span class="text-[10px] sm:text-xs">PhilHealth</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center bg-white p-1 shadow-sm" style="overflow:hidden;">
+              <img src="assets/National_Bureau_of_Investigation_(NBI).svg.png" alt="NBI" style="width:28px;height:28px;object-fit:contain;display:block;" />
+            </div>
+            <span class="text-[10px] sm:text-xs">NBI</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center bg-white p-1 shadow-sm" style="overflow:hidden;">
+              <img src="assets/Seal_of_the_Department_of_Foreign_Affairs_of_the_Philippines.svg.png" alt="DFA" style="width:28px;height:28px;object-fit:contain;display:block;" />
+            </div>
+            <span class="text-[10px] sm:text-xs">DFA/Passport</span>
+          </div>
+          <div class="flex items-center gap-2 col-span-3 sm:col-span-1">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center bg-white p-1 shadow-sm" style="overflow:hidden;">
+              <img src="assets/253-2533880_city-hall-icon.png" alt="City Hall" style="width:28px;height:28px;object-fit:contain;display:block;" />
+            </div>
+            <span class="text-[10px] sm:text-xs">City Hall</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Suggest Office Button -->
       <div class="px-4 sm:px-6 py-2 bg-[var(--bg)] border-b border-[var(--border)] flex items-center justify-between">
         <span class="text-xs opacity-60">Don't see an office? Help the community by adding it.</span>
@@ -660,7 +701,7 @@
   <footer class="bg-[var(--bg)] text-xs py-6 sm:py-8 border-t border-[var(--border)] opacity-60">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
       <div class="mb-2">
-        GovHub • Cebu Prototype v7.0 • Simplified without authentication
+        GovHub • Cebu
       </div>
       <div class="flex justify-center gap-4 text-[10px] sm:text-xs">
         <a href="#" class="hover:opacity-100">Terms</a>
@@ -673,7 +714,14 @@
   <!-- Leaflet JS for OpenStreetMap -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Config & Database -->
+  <script src="config.js"></script>
+
   <!-- External JavaScript -->
+  <script type="module" src="supabase-client.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
