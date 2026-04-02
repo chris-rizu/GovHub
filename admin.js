@@ -162,14 +162,19 @@ function renderSuggestionContent(row) {
 }
 
 function renderSubmissionContent(row) {
+  const updateType = row.update_type || 'other'
+  const displayType = updateType.charAt(0).toUpperCase() + updateType.slice(1)
+  const serviceType = row.service_type === 'other' ? 'Not on list' : row.service_type
+
   return `
     <div class="flex flex-wrap items-center gap-2 mb-2">
-      <h3 class="font-semibold">${escapeHtml(row.service_type)}</h3>
-      <span class="px-2 py-0.5 rounded-full bg-cyan-400/10 text-cyan-400 text-xs">${escapeHtml(row.update_type || 'other')}</span>
+      <h3 class="font-semibold">${escapeHtml(serviceType)}</h3>
+      <span class="px-2 py-0.5 rounded-full bg-cyan-400/10 text-cyan-400 text-xs">${escapeHtml(displayType)}</span>
       <span class="px-2 py-0.5 rounded-full border border-[var(--border)] text-xs uppercase">${escapeHtml(row.status)}</span>
     </div>
     <p class="text-sm opacity-80">${escapeHtml(row.branch_name)}</p>
     <p class="text-sm opacity-70 mt-1">From: ${escapeHtml(row.submitter_name)}</p>
+    ${updateType === 'suggestion' ? `<p class="text-sm text-cyan-300 mt-2"><i class="fas fa-lightbulb mr-1"></i>Suggestion for new service to add</p>` : ''}
     <p class="text-sm opacity-60 mt-2">${escapeHtml(row.details)}</p>
   `
 }
