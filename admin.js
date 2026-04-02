@@ -115,8 +115,8 @@ function renderAuth() {
 
 function renderMetrics(metrics = {}) {
   const cards = [
-    { label: 'Visitors (24h)', value: metrics.visitsLast24h || 0, icon: 'fa-users' },
-    { label: 'Unique Visitors', value: metrics.uniqueVisitorsLast24h || 0, icon: 'fa-user-check' },
+    { label: 'Unique Visitors (24h)', value: metrics.uniqueVisitorsLast24h || 0, icon: 'fa-user-check' },
+    { label: 'Page Views (24h)', value: metrics.pageviewsLast24h || metrics.visitsLast24h || 0, icon: 'fa-users' },
     { label: 'Pending Suggestions', value: metrics.pendingSuggestions || 0, icon: 'fa-location-dot' },
     { label: 'Pending Submissions', value: metrics.pendingSubmissions || 0, icon: 'fa-inbox' }
   ]

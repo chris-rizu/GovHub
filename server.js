@@ -27,7 +27,11 @@ app.use(cors())
 app.use(express.json())
 
 app.get('/', (req, res) => {
-  return res.sendFile(path.join(staticRoot, 'admin.html'))
+  return res.sendFile(path.join(staticRoot, 'index.html'))
+})
+
+app.get('/index.html', (req, res) => {
+  return res.sendFile(path.join(staticRoot, 'index.html'))
 })
 
 app.get('/admin', (req, res) => {
@@ -83,6 +87,24 @@ function normalizeLimit(value, fallback = 50, max = 200) {
   return Math.min(parsed, max)
 }
 
+function normalizeText(value, { maxLength = 5000, allowEmpty = false } = {}) {
+  const normalized = typeof value === 'string' ? value.trim() : ''
+  if (!normalized) {
+    return allowEmpty ? '' : null
+  }
+  return normalized.slice(0, maxLength)
+}
+
+function normalizeNullableText(value, options = {}) {
+  return normalizeText(value, options)
+}
+
+function normalizeUpdateType(value) {
+  const normalized = normalizeText(value, { maxLength: 50 })
+  const allowed = new Set(['fee', 'requirement', 'process', 'schedule', 'tip', 'other'])
+  return normalized && allowed.has(normalized) ? normalized : 'other'
+}
+
 function buildCountMap(rows, key) {
   return rows.reduce((acc, row) => {
     const value = row[key] || 'unknown'
@@ -114,10 +136,10 @@ app.post('/api/track-visit', requireSupabase, async (req, res) => {
   try {
     const body = req.body || {}
     const payload = {
-      session_id: body.session_id || null,
-      page_path: body.page_path || req.headers['x-path'] || '/',
-      referrer: body.referrer || req.get('Referrer') || null,
-      user_agent: body.user_agent || req.get('User-Agent') || null,
+      session_id: normalizeNullableText(body.session_id, { maxLength: 255 }),
+      page_path: normalizeText(body.page_path || req.headers['x-path'] || '/', { maxLength: 500 }) || '/',
+      referrer: normalizeNullableText(body.referrer || req.get('Referrer'), { maxLength: 2000 }),
+      user_agent: normalizeNullableText(body.user_agent || req.get('User-Agent'), { maxLength: 2000 }),
       metadata: body.metadata || null
     }
 
@@ -128,6 +150,76 @@ app.post('/api/track-visit', requireSupabase, async (req, res) => {
     return res.json({ success: true })
   } catch (error) {
     console.error('track-visit failed', error)
+    return res.status(500).json({ error: error.message })
+  }
+})
+
+app.post('/api/submissions', requireSupabase, async (req, res) => {
+  try {
+    const body = req.body || {}
+    const payload = {
+      submitter_name: normalizeText(body.name || body.submitter_name, { maxLength: 150 }),
+      service_type: normalizeText(body.service || body.service_type, { maxLength: 150 }),
+      branch_name: normalizeText(body.branch || body.branch_name, { maxLength: 200 }),
+      update_type: normalizeUpdateType(body.type || body.update_type),
+      details: normalizeText(body.details, { maxLength: 5000 })
+    }
+
+    if (!payload.submitter_name || !payload.service_type || !payload.branch_name || !payload.details) {
+      return res.status(400).json({
+        error: 'submitter_name, service_type, branch_name, and details are required.'
+      })
+    }
+
+    const { data, error } = await supabase
+      .from('submissions')
+      .insert(payload)
+      .select('*')
+      .single()
+
+    if (error) {
+      return res.status(500).json({ error: error.message })
+    }
+
+    return res.status(201).json({ success: true, submission: data })
+  } catch (error) {
+    console.error('public submission failed', error)
+    return res.status(500).json({ error: error.message })
+  }
+})
+
+app.post('/api/office-suggestions', requireSupabase, async (req, res) => {
+  try {
+    const body = req.body || {}
+    const payload = {
+      submitter_name: normalizeText(body.submitterName || body.submitter_name || body.name, { maxLength: 150 }),
+      contact: normalizeNullableText(body.contact, { maxLength: 200 }),
+      office_name: normalizeText(body.officeName || body.office_name || body.office, { maxLength: 200 }),
+      office_type: normalizeText(body.officeType || body.office_type || body.type, { maxLength: 100 }),
+      city: normalizeText(body.city, { maxLength: 150 }),
+      address: normalizeText(body.address, { maxLength: 500 }),
+      notes: normalizeNullableText(body.notes || body.details, { maxLength: 5000 })
+    }
+
+    if (!payload.submitter_name || !payload.office_name || !payload.office_type || !payload.city || !payload.address) {
+      return res.status(400).json({
+        error: 'submitter_name, office_name, office_type, city, and address are required.'
+      })
+    }
+
+    const { data, error } = await supabase
+      .from('office_suggestions')
+      .insert(payload)
+      .select('*')
+      .single()
+
+    if (error) {
+      return res.status(500).json({ error: error.message })
+    }
+
+    return res.status(201).json({ success: true, suggestion: data })
+  } catch (error) {
+    console.error('public office suggestion failed', error)
     return res.status(500).json({ error: error.message })
   }
 })
