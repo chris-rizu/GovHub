@@ -12,18 +12,14 @@ function captureElements() {
   els.refreshButton = document.getElementById('btn-refresh')
   els.emailInput = document.getElementById('admin-email')
   els.passwordInput = document.getElementById('admin-pass')
-  els.loginCard = document.getElementById('login-card')
   els.loginError = document.getElementById('login-error')
-  els.authControls = document.getElementById('auth-controls')
-  els.authBadge = document.getElementById('auth-badge')
+  els.loginView = document.getElementById('login-view')
+  els.dashboardView = document.getElementById('dashboard-view')
+  els.userEmail = document.getElementById('user-email')
   els.metrics = document.getElementById('metrics')
   els.results = document.getElementById('results')
   els.resultsSummary = document.getElementById('results-summary')
-  els.dashboardShell = document.getElementById('dashboard-shell')
-  els.dashboardEmpty = document.getElementById('dashboard-empty')
   els.statusFilter = document.getElementById('status-filter')
-  els.topPages = document.getElementById('top-pages')
-  els.recentVisits = document.getElementById('recent-visits')
   els.tabButtons = Array.from(document.querySelectorAll('.admin-tab-btn'))
 }
 
@@ -40,14 +36,18 @@ function showLoginError(message = '') {
 function setLoading(isLoading) {
   els.refreshButton.disabled = isLoading || !state.session
   els.signInButton.disabled = isLoading
-  els.refreshButton.innerHTML = isLoading
-    ? '<i class="fas fa-spinner fa-spin mr-2"></i>Loading'
-    : '<i class="fas fa-rotate mr-2"></i>Refresh'
+  if (isLoading) {
+    els.refreshButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'
+    els.signInButton.textContent = 'Signing in...'
+  } else {
+    els.refreshButton.innerHTML = '<i class="fas fa-rotate"></i>'
+    els.signInButton.textContent = 'Sign In'
+  }
 }
 
 function formatDate(value) {
-  if (!value) return 'Unknown time'
-  return new Date(value).toLocaleString()
+  if (!value) return 'Unknown'
+  return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
 function escapeHtml(value) {
@@ -67,7 +67,8 @@ async function getAccessToken() {
 
 async function adminFetch(path, options = {}) {
   const token = await getAccessToken()
-  const response = await fetch(path, {
+  const url = path.startsWith('http') ? path : `http://localhost:3001${path}`
+  const response = await fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -76,7 +77,7 @@ async function adminFetch(path, options = {}) {
     }
   })
 
-  const json = await response.json().catch(() => ({ error: 'Invalid JSON response from server.' }))
+  const json = await response.json().catch(() => ({ error: 'Invalid response from server' }))
   if (!response.ok) {
     throw new Error(json.error || `Request failed with status ${response.status}`)
   }
@@ -87,146 +88,90 @@ function renderAuth() {
   const user = state.session?.user
   const isSignedIn = Boolean(user)
 
-  els.loginCard.classList.toggle('hidden', isSignedIn)
-  els.dashboardShell.classList.toggle('hidden', !isSignedIn)
-  els.dashboardEmpty.classList.toggle('hidden', isSignedIn)
-  els.authBadge.textContent = isSignedIn ? 'Signed In' : 'Signed Out'
-  els.authBadge.className = isSignedIn
-    ? 'rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200'
-    : 'rounded-full border border-[var(--border)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] opacity-80'
+  els.loginView.classList.toggle('hidden', isSignedIn)
+  els.dashboardView.classList.toggle('hidden', !isSignedIn)
 
   if (isSignedIn) {
-    els.authControls.innerHTML = `
-      <div class="space-y-3">
-        <div class="text-sm">
-          <div class="font-semibold">${escapeHtml(user.email || 'Authenticated admin')}</div>
-          <div class="opacity-65">Authenticated through Supabase Auth</div>
-        </div>
-        <button id="btn-signout" class="rounded-2xl border border-red-400/25 bg-red-500/10 px-4 py-2 text-sm font-medium text-red-200 hover:bg-red-500/20 transition">
-          Sign Out
-        </button>
-      </div>
-    `
-    document.getElementById('btn-signout').addEventListener('click', handleSignOut)
-  } else {
-    els.authControls.textContent = 'Not signed in.'
+    els.userEmail.textContent = user.email || 'Admin'
   }
 }
 
 function renderMetrics(metrics = {}) {
   const cards = [
-    { label: 'Unique Visitors (24h)', value: metrics.uniqueVisitorsLast24h || 0, icon: 'fa-user-check' },
-    { label: 'Page Views (24h)', value: metrics.pageviewsLast24h || metrics.visitsLast24h || 0, icon: 'fa-users' },
-    { label: 'Pending Suggestions', value: metrics.pendingSuggestions || 0, icon: 'fa-location-dot' },
-    { label: 'Pending Submissions', value: metrics.pendingSubmissions || 0, icon: 'fa-inbox' }
+    { label: 'Visitors (24h)', value: metrics.uniqueVisitorsLast24h || 0, icon: 'fa-users', color: 'cyan' },
+    { label: 'Page Views (24h)', value: metrics.pageviewsLast24h || 0, icon: 'fa-eye', color: 'blue' },
+    { label: 'Pending Suggestions', value: metrics.pendingSuggestions || 0, icon: 'fa-lightbulb', color: 'yellow' },
+    { label: 'Pending Reports', value: metrics.pendingSubmissions || 0, icon: 'fa-inbox', color: 'emerald' }
   ]
 
   els.metrics.innerHTML = cards.map((card) => `
-    <article class="rounded-3xl border border-[var(--border)] bg-[var(--card)]/90 p-5">
-      <div class="flex items-start justify-between gap-3">
+    <div class="rounded-xl border border-[var(--border)] bg-[var(--card)]/50 p-4">
+      <div class="flex items-center justify-between">
         <div>
-          <p class="text-sm opacity-70">${card.label}</p>
-          <div class="mt-3 text-3xl font-semibold">${card.value}</div>
+          <p class="text-xs opacity-60">${card.label}</p>
+          <p class="text-2xl font-bold mt-1">${card.value}</p>
         </div>
-        <div class="h-11 w-11 rounded-2xl bg-cyan-400/10 text-cyan-300 flex items-center justify-center">
+        <div class="h-10 w-10 rounded-lg bg-${card.color}-400/10 text-${card.color}-400 flex items-center justify-center">
           <i class="fas ${card.icon}"></i>
         </div>
       </div>
-    </article>
-  `).join('')
-}
-
-function renderTopPages(topPages = []) {
-  if (!topPages.length) {
-    els.topPages.innerHTML = '<p class="opacity-60">No visitor data yet.</p>'
-    return
-  }
-
-  els.topPages.innerHTML = topPages.map((page) => `
-    <div class="rounded-2xl border border-[var(--border)] bg-[var(--bg)]/70 px-4 py-3 flex items-center justify-between gap-3">
-      <span class="truncate">${escapeHtml(page.path)}</span>
-      <span class="text-cyan-300 font-semibold">${page.views}</span>
-    </div>
-  `).join('')
-}
-
-function renderRecentVisits(visits = []) {
-  if (!visits.length) {
-    els.recentVisits.innerHTML = '<p class="opacity-60">No recent visits to display.</p>'
-    return
-  }
-
-  els.recentVisits.innerHTML = visits.map((visit) => `
-    <div class="rounded-2xl border border-[var(--border)] bg-[var(--bg)]/70 px-4 py-3">
-      <div class="flex items-center justify-between gap-3">
-        <span class="font-medium truncate">${escapeHtml(visit.page_path || '/')}</span>
-        <span class="text-xs opacity-60">${formatDate(visit.created_at)}</span>
-      </div>
-      <div class="mt-1 text-xs opacity-60">Session: ${escapeHtml(visit.session_id || 'anonymous')}</div>
     </div>
   `).join('')
 }
 
 function renderTable(rows, type) {
   if (!rows.length) {
-    els.results.innerHTML = '<div class="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--bg)]/60 px-5 py-8 text-center opacity-70">No records found for this filter.</div>'
-    return
-  }
-
-  if (type === 'suggestions') {
-    els.results.innerHTML = rows.map((row) => `
-      <article class="rounded-3xl border border-[var(--border)] bg-[var(--bg)]/70 p-5 mb-4">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div class="min-w-0">
-            <div class="flex flex-wrap items-center gap-2">
-              <h3 class="text-lg font-semibold">${escapeHtml(row.office_name)}</h3>
-              <span class="rounded-full bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-200">${escapeHtml(row.office_type)}</span>
-              <span class="rounded-full border border-[var(--border)] px-3 py-1 text-xs uppercase tracking-[0.2em] opacity-70">${escapeHtml(row.status)}</span>
-            </div>
-            <p class="mt-2 text-sm opacity-80">${escapeHtml(row.address)}, ${escapeHtml(row.city)}</p>
-            <p class="mt-3 text-sm opacity-75">Submitted by ${escapeHtml(row.submitter_name)}${row.contact ? ` • ${escapeHtml(row.contact)}` : ''}</p>
-            <p class="mt-2 text-sm opacity-70">${escapeHtml(row.notes || 'No notes provided.')}</p>
-            <div class="mt-3 flex flex-wrap gap-4 text-xs opacity-60">
-              <span>Votes: ${row.votes || 0}</span>
-              <span>Created: ${formatDate(row.created_at)}</span>
-              <span>Admin note: ${escapeHtml(row.admin_notes || 'None')}</span>
-            </div>
-          </div>
-          <div class="flex flex-col gap-2 lg:w-56">
-            <button class="moderate-btn rounded-2xl bg-emerald-400 px-4 py-3 text-sm font-semibold text-[#0a0f1c] hover:bg-emerald-300 transition" data-kind="suggestions" data-id="${row.id}" data-status="approved">Approve</button>
-            <button class="moderate-btn rounded-2xl bg-red-400/90 px-4 py-3 text-sm font-semibold text-[#0a0f1c] hover:bg-red-300 transition" data-kind="suggestions" data-id="${row.id}" data-status="rejected">Reject</button>
-          </div>
-        </div>
-      </article>
-    `).join('')
+    els.results.innerHTML = '<p class="text-center py-12 opacity-60">No records found</p>'
     return
   }
 
   els.results.innerHTML = rows.map((row) => `
-    <article class="rounded-3xl border border-[var(--border)] bg-[var(--bg)]/70 p-5 mb-4">
-      <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div class="min-w-0">
-          <div class="flex flex-wrap items-center gap-2">
-            <h3 class="text-lg font-semibold">${escapeHtml(row.service_type)}</h3>
-            <span class="rounded-full bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-200">${escapeHtml(row.update_type || 'other')}</span>
-            <span class="rounded-full border border-[var(--border)] px-3 py-1 text-xs uppercase tracking-[0.2em] opacity-70">${escapeHtml(row.status)}</span>
-          </div>
-          <p class="mt-2 text-sm opacity-80">${escapeHtml(row.branch_name)}</p>
-          <p class="mt-3 text-sm opacity-75">Submitted by ${escapeHtml(row.submitter_name)}</p>
-          <p class="mt-2 text-sm opacity-70">${escapeHtml(row.details)}</p>
-          <div class="mt-3 flex flex-wrap gap-4 text-xs opacity-60">
-            <span>Created: ${formatDate(row.created_at)}</span>
-            <span>Reviewed: ${row.reviewed_at ? formatDate(row.reviewed_at) : 'Not reviewed'}</span>
-            <span>Admin note: ${escapeHtml(row.admin_notes || 'None')}</span>
+    <div class="rounded-xl border border-[var(--border)] bg-[var(--bg)]/50 p-4 mb-3 last:mb-0">
+      <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div class="flex-1 min-w-0">
+          ${type === 'suggestions' ? renderSuggestionContent(row) : renderSubmissionContent(row)}
+          <div class="mt-3 flex flex-wrap gap-3 text-xs opacity-50">
+            <span><i class="far fa-clock mr-1"></i>${formatDate(row.created_at)}</span>
+            ${row.reviewed_at ? `<span><i class="fas fa-check mr-1"></i>Reviewed: ${formatDate(row.reviewed_at)}</span>` : ''}
           </div>
         </div>
-        <div class="flex flex-col gap-2 lg:w-56">
-          <button class="moderate-btn rounded-2xl bg-emerald-400 px-4 py-3 text-sm font-semibold text-[#0a0f1c] hover:bg-emerald-300 transition" data-kind="submissions" data-id="${row.id}" data-status="approved">Approve</button>
-          <button class="moderate-btn rounded-2xl bg-red-400/90 px-4 py-3 text-sm font-semibold text-[#0a0f1c] hover:bg-red-300 transition" data-kind="submissions" data-id="${row.id}" data-status="rejected">Reject</button>
+        <div class="flex sm:flex-col gap-2">
+          <button class="moderate-btn px-4 py-2 rounded-lg bg-emerald-400 text-[#0a0f1c] text-sm font-medium hover:bg-emerald-300 transition" data-kind="${type}" data-id="${row.id}" data-status="approved">
+            Approve
+          </button>
+          <button class="moderate-btn px-4 py-2 rounded-lg bg-red-400/20 text-red-300 text-sm font-medium hover:bg-red-400/30 transition" data-kind="${type}" data-id="${row.id}" data-status="rejected">
+            Reject
+          </button>
         </div>
       </div>
-    </article>
+    </div>
   `).join('')
+}
+
+function renderSuggestionContent(row) {
+  return `
+    <div class="flex flex-wrap items-center gap-2 mb-2">
+      <h3 class="font-semibold">${escapeHtml(row.office_name)}</h3>
+      <span class="px-2 py-0.5 rounded-full bg-cyan-400/10 text-cyan-400 text-xs">${escapeHtml(row.office_type)}</span>
+      <span class="px-2 py-0.5 rounded-full border border-[var(--border)] text-xs uppercase">${escapeHtml(row.status)}</span>
+    </div>
+    <p class="text-sm opacity-80">${escapeHtml(row.address)}, ${escapeHtml(row.city)}</p>
+    <p class="text-sm opacity-70 mt-1">From: ${escapeHtml(row.submitter_name)}</p>
+    ${row.notes ? `<p class="text-sm opacity-60 mt-2 italic">"${escapeHtml(row.notes)}"</p>` : ''}
+  `
+}
+
+function renderSubmissionContent(row) {
+  return `
+    <div class="flex flex-wrap items-center gap-2 mb-2">
+      <h3 class="font-semibold">${escapeHtml(row.service_type)}</h3>
+      <span class="px-2 py-0.5 rounded-full bg-cyan-400/10 text-cyan-400 text-xs">${escapeHtml(row.update_type || 'other')}</span>
+      <span class="px-2 py-0.5 rounded-full border border-[var(--border)] text-xs uppercase">${escapeHtml(row.status)}</span>
+    </div>
+    <p class="text-sm opacity-80">${escapeHtml(row.branch_name)}</p>
+    <p class="text-sm opacity-70 mt-1">From: ${escapeHtml(row.submitter_name)}</p>
+    <p class="text-sm opacity-60 mt-2">${escapeHtml(row.details)}</p>
+  `
 }
 
 function setActiveTab() {
@@ -235,6 +180,7 @@ function setActiveTab() {
     button.classList.toggle('bg-[var(--accent)]', isActive)
     button.classList.toggle('text-[#0a0f1c]', isActive)
     button.classList.toggle('border-transparent', isActive)
+    button.classList.toggle('bg-[var(--bg)]', !isActive)
   })
 }
 
@@ -242,8 +188,6 @@ async function loadOverview() {
   const json = await adminFetch('/api/admin/overview')
   state.overview = json
   renderMetrics(json.metrics || {})
-  renderTopPages(json.topPages || [])
-  renderRecentVisits(json.recentVisits || [])
 }
 
 async function loadModerationView() {
@@ -254,9 +198,7 @@ async function loadModerationView() {
   const json = await adminFetch(endpoint)
   const rows = state.currentView === 'suggestions' ? (json.suggestions || []) : (json.submissions || [])
   renderTable(rows, state.currentView)
-  els.resultsSummary.textContent = state.currentView === 'suggestions'
-    ? `${rows.length} office suggestions shown`
-    : `${rows.length} community reports shown`
+  els.resultsSummary.textContent = `${rows.length} ${state.currentView === 'suggestions' ? 'suggestions' : 'reports'}`
   setActiveTab()
 }
 
@@ -302,8 +244,6 @@ async function handleSignOut() {
   state.overview = null
   els.results.innerHTML = ''
   els.metrics.innerHTML = ''
-  els.topPages.innerHTML = ''
-  els.recentVisits.innerHTML = ''
   els.resultsSummary.textContent = ''
   renderAuth()
 }
@@ -312,7 +252,6 @@ async function handleModerationClick(event) {
   const button = event.target.closest('.moderate-btn')
   if (!button) return
 
-  const adminNotes = window.prompt('Optional admin note for this action:', '') ?? ''
   const endpoint = button.dataset.kind === 'suggestions'
     ? `/api/admin/suggestions/${button.dataset.id}/moderate`
     : `/api/admin/submissions/${button.dataset.id}/moderate`
@@ -321,10 +260,7 @@ async function handleModerationClick(event) {
   try {
     await adminFetch(endpoint, {
       method: 'POST',
-      body: JSON.stringify({
-        status: button.dataset.status,
-        adminNotes
-      })
+      body: JSON.stringify({ status: button.dataset.status })
     })
     await refreshDashboard()
   } catch (error) {
@@ -353,6 +289,7 @@ async function bootstrapAuth() {
 
 function bindEvents() {
   els.signInButton.addEventListener('click', handleSignIn)
+  document.getElementById('btn-signout')?.addEventListener('click', handleSignOut)
   els.refreshButton.addEventListener('click', refreshDashboard)
   els.statusFilter.addEventListener('change', async (event) => {
     state.statusFilter = event.target.value

@@ -1,63 +1,30 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 /* ===========================================
-   THEME VARIABLES - Must come before everything
+   THEME VARIABLES
    =========================================== */
 
-/* Default (dark mode) - These are the base values */
 :root {
-  --theme-bg-start: #0a0f1c;
-  --theme-bg-end: #0f172a;
-  --theme-bg: #0a0f1c;
-  --theme-card: #111827;
-  --theme-text: #f1f5f9;
-  --theme-accent: #22d3ee;
-  --theme-accent-darker: #06b6d4;
-  --theme-border: #334155;
-  --theme-success: #10b981;
-  --theme-warning: #f59e0b;
-  --theme-danger: #ef4444;
-  --theme-input: #1f2937;
-  --theme-hover: #1f2937;
-}
-
-/* Light mode overrides */
-html.light {
-  --theme-bg-start: #f0f9ff;
-  --theme-bg-end: #e0f2fe;
-  --theme-bg: #ffffff;
-  --theme-card: #f8fafc;
-  --theme-text: #0f172a;
-  --theme-accent: #0ea5e9;
-  --theme-border: #e2e8f0;
-  --theme-input: #f1f5f9;
-  --theme-hover: #f1f5f9;
-}
-
-/* Map legacy var names to theme vars */
-:root {
-  --bg: var(--theme-bg);
-  --card: var(--theme-card);
-  --text: var(--theme-text);
-  --accent: var(--theme-accent);
-  --border: var(--theme-border);
-  --success: var(--theme-success);
-  --warning: var(--theme-warning);
-  --danger: var(--theme-danger);
-  --input-bg: var(--theme-input);
-  --hover-bg: var(--theme-hover);
-}
-
-/* Dark mode specific styles (default) */
-html {
-  background: var(--theme-bg);
-  color: var(--theme-text);
-  transition: background 0.4s, color 0.4s;
+  --bg: #0a0f1c;
+  --card: #111827;
+  --text: #f1f5f9;
+  --accent: #22d3ee;
+  --border: #334155;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --input: #1f2937;
+  --hover: #1f2937;
 }
 
 html.light {
-  background: var(--theme-bg);
-  color: var(--theme-text);
+  --bg: #ffffff;
+  --card: #f8fafc;
+  --text: #0f172a;
+  --accent: #0ea5e9;
+  --border: #e2e8f0;
+  --input: #f1f5f9;
+  --hover: #f1f5f9;
 }
 
 /* ===========================================
@@ -66,14 +33,18 @@ html.light {
 
 * { box-sizing: border-box; }
 
+html {
+  background: var(--bg);
+  color: var(--text);
+  transition: background 0.3s, color 0.3s;
+}
+
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  background: linear-gradient(180deg, var(--theme-bg-start) 0%, var(--theme-bg-end) 50%, #0c1222 100%);
+  background: linear-gradient(180deg, var(--bg) 0%, #0c1222 100%);
   background-attachment: fixed;
-  background-size: cover;
-  color: var(--theme-text);
-  transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 100vh;
+  margin: 0;
 }
 
 html.light body {
@@ -82,67 +53,6 @@ html.light body {
 
 .logo-font {
   font-family: 'Space Grotesk', sans-serif;
-}
-
-.card-hover {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.card-hover:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.15);
-}
-
-/* Subtle glow on cards for gradient background */
-.bg-\[var\(--card\)\] {
-  position: relative;
-}
-
-/* Add ambient glow effect */
-body::before {
-  content: '';
-  position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle at 30% 20%, rgba(34, 211, 238, 0.03) 0%, transparent 50%),
-              radial-gradient(circle at 70% 80%, rgba(16, 185, 129, 0.02) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: -1;
-}
-
-html.light body::before {
-  display: none;
-}
-
-html.light .admin-shell-bg {
-  background: #ffffff;
-}
-
-/* Ensure main content sits above glow */
-body > * {
-  position: relative;
-  z-index: 1;
-}
-
-.pill {
-  background: var(--theme-border);
-  color: var(--theme-text);
-  transition: all 0.2s;
-}
-.pill.active {
-  background: var(--theme-accent);
-  color: #0a0f1c;
-  font-weight: 600;
-}
-
-.signal-dot {
-  animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-}
-
-.tab-active {
-  color: var(--theme-accent);
-  border-bottom: 2px solid var(--theme-accent);
 }
 
 /* ===========================================
@@ -176,66 +86,18 @@ body > * {
   100% { transform: rotate(360deg); }
 }
 
+.signal-dot { animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
 .animate-in { animation: fadeIn 0.3s ease-out; }
 .slide-in { animation: slideIn 0.3s ease-out; }
-.animate-pulse { animation: pulse 2s infinite; }
-
-/* Floating animation for cards */
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-.float-animation {
-  animation: float 4s ease-in-out infinite;
-}
-
-/* Parallax effect on hero */
-header {
-  position: relative;
-}
-
-/* Smooth hover effects */
-.card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.card-hover:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 25px 30px -5px rgb(0 0 0 / 0.2);
-}
-
-/* Table row animations */
-tbody tr {
-  transition: all 0.2s ease-out;
-}
-
-tbody tr:hover {
-  transform: scale(1.01);
-}
-
-/* Button ripple effect */
-button {
-  position: relative;
-  overflow: hidden;
-}
-
-/* Progress bar animation */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
 
 /* ===========================================
-   COMPONENT STYLES
+   COMPONENTS
    =========================================== */
-
-table { border-collapse: collapse; }
 
 /* Loading spinner */
 .spinner {
-  border: 3px solid var(--theme-border);
-  border-top: 3px solid var(--theme-accent);
+  border: 3px solid var(--border);
+  border-top: 3px solid var(--accent);
   border-radius: 50%;
   width: 24px;
   height: 24px;
@@ -243,28 +105,17 @@ table { border-collapse: collapse; }
 }
 
 /* Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--theme-bg);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--theme-border);
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--theme-accent);
-}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-/* Utility */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+/* Navbar gradient */
+.nav-gradient {
+  background: linear-gradient(180deg, #0a0f1c 0%, #0f172a 100%);
 }
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+html.light .nav-gradient {
+  background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);
 }
 
 /* Toggle Switch */
@@ -273,20 +124,13 @@ table { border-collapse: collapse; }
   width: 44px;
   height: 24px;
 }
-.toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
 .toggle-slider {
   position: absolute;
   cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--theme-border);
-  transition: .4s;
+  inset: 0;
+  background-color: var(--border);
+  transition: .3s;
   border-radius: 24px;
 }
 .toggle-slider:before {
@@ -297,15 +141,11 @@ table { border-collapse: collapse; }
   left: 2px;
   bottom: 2px;
   background-color: white;
-  transition: .4s;
+  transition: .3s;
   border-radius: 50%;
 }
-input:checked + .toggle-slider {
-  background-color: var(--theme-accent);
-}
-input:checked + .toggle-slider:before {
-  transform: translateX(20px);
-}
+input:checked + .toggle-slider { background-color: var(--accent); }
+input:checked + .toggle-slider:before { transform: translateX(20px); }
 
 /* Toast notifications */
 .toast-notification {
@@ -315,7 +155,78 @@ input:checked + .toggle-slider:before {
   to { opacity: 0; transform: translateY(10px); }
 }
 
-/* Screen reader only */
+/* ===========================================
+   MAP STYLES
+   =========================================== */
+
+#office-map {
+  background: var(--bg);
+  min-height: 300px;
+}
+
+.leaflet-popup-content-wrapper {
+  background: var(--card);
+  color: var(--text);
+  border-radius: 12px;
+}
+.leaflet-popup-tip { background: var(--card); }
+.leaflet-container { font-family: 'Inter', system-ui, sans-serif; }
+
+.map-filter-btn {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+}
+.map-filter-btn:hover { background: var(--hover); }
+.map-filter-btn.active {
+  background: var(--accent) !important;
+  color: #0a0f1c !important;
+  font-weight: 600;
+}
+
+/* ===========================================
+   MOBILE BOTTOM NAV
+   =========================================== */
+
+#mobile-bottom-nav {
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  background: var(--card);
+}
+
+#mobile-bottom-nav .mobile-nav-btn {
+  color: var(--text);
+  opacity: 60%;
+  transition: all 0.2s;
+}
+#mobile-bottom-nav .mobile-nav-btn:hover {
+  opacity: 80%;
+  background: var(--bg);
+}
+#mobile-bottom-nav .mobile-nav-btn.active {
+  opacity: 100%;
+  color: var(--accent);
+}
+
+@media (min-width: 1024px) {
+  #mobile-bottom-nav { display: none; }
+}
+
+@media (max-width: 1023px) {
+  body { padding-bottom: 65px; }
+}
+
+/* ===========================================
+   UTILITIES
+   =========================================== */
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -328,216 +239,7 @@ input:checked + .toggle-slider:before {
   border-width: 0;
 }
 
-/* Print styles */
 @media print {
-  body {
-    background: white;
-    color: black;
-  }
-  .no-print {
-    display: none !important;
-  }
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-  .hero-title { font-size: 2rem !important; }
-  .service-card { min-height: auto; }
-  .modal-content { max-h: 85vh; }
-  #search-input { width: 100%; }
-}
-
-/* Auto-scrolling carousel */
-.auto-scroll-carousel {
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
-}
-
-.auto-scroll-carousel::-webkit-scrollbar {
-  display: none;
-}
-
-.carousel-container {
-  display: flex;
-  gap: 0.5rem;
-  animation: scrollLeft 40s linear infinite;
-}
-
-.carousel-container:hover {
-  animation-play-state: paused;
-}
-
-@keyframes scrollLeft {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(calc(-50% - 0.25rem));
-  }
-}
-
-/* ===========================================
-   MAP STYLES
-   =========================================== */
-
-/* Map filter buttons */
-.map-filter-btn {
-  background: var(--theme-card);
-  color: var(--theme-text);
-  border: 1px solid var(--theme-border);
-  transition: all 0.2s;
-}
-
-.map-filter-btn:hover {
-  background: var(--theme-hover);
-}
-
-.map-filter-btn.active {
-  background: var(--theme-accent) !important;
-  color: #0a0f1c !important;
-  font-weight: 600;
-}
-
-/* Custom map markers */
-.custom-map-marker {
-  background: transparent;
-  border: none;
-}
-
-/* User location marker pulse animation */
-@keyframes locationPulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.5); opacity: 0.5; }
-  100% { transform: scale(2); opacity: 0; }
-}
-
-.user-location-marker::before {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: #3B82F6;
-  animation: locationPulse 2s infinite;
-}
-
-/* Leaflet popup customization for dark mode */
-.leaflet-popup-content-wrapper {
-  background: var(--theme-card);
-  color: var(--theme-text);
-  border-radius: 12px;
-}
-
-.leaflet-popup-tip {
-  background: var(--theme-card);
-}
-
-.leaflet-container {
-  font-family: 'Inter', system-ui, sans-serif;
-}
-
-/* Map container */
-#office-map {
-  background: var(--theme-bg);
-  min-height: 300px;
-}
-
-/* Office info panel */
-#office-info-panel {
-  transition: all 0.3s ease-out;
-  animation: slideUp 0.3s ease-out;
-  max-height: 50vh;
-  overflow-y: auto;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Map modal specific styles */
-#map-modal {
-  backdrop-filter: blur(4px);
-}
-
-/* ===========================================
-   MOBILE BOTTOM NAVIGATION
-   =========================================== */
-
-/* Safe area padding for devices with home indicator */
-.safe-area-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 16px);
-}
-
-/* Mobile bottom nav */
-#mobile-bottom-nav {
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  background: var(--theme-card);
-}
-
-#mobile-bottom-nav .mobile-nav-btn {
-  color: var(--theme-text);
-  opacity: 60%;
-  transition: all 0.2s ease;
-}
-
-#mobile-bottom-nav .mobile-nav-btn:hover {
-  opacity: 80%;
-  background: var(--theme-bg);
-}
-
-#mobile-bottom-nav .mobile-nav-btn.active {
-  opacity: 100%;
-  color: var(--theme-accent);
-}
-
-#mobile-bottom-nav .mobile-nav-btn.active i {
-  transform: scale(1.1);
-}
-
-/* ===========================================
-   MOBILE NAVBAR HEADER
-   =========================================== */
-
-/* Navbar gradient */
-nav.nav-gradient {
-  background: linear-gradient(180deg, #0a0f1c 0%, #0f172a 100%);
-}
-
-html.light nav.nav-gradient {
-  background: linear-gradient(180deg, #ffffff 0%, #f0f9ff 100%);
-}
-
-/* Smooth hover effect for mobile nav buttons */
-nav.bg-\[\#0a0f1c\] button:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-/* Ensure perfect center alignment */
-nav.bg-\[\#0a0f1c\] > div:first-child {
-  align-items: center;
-}
-
-/* Add extra padding to bottom of body when bottom nav is visible */
-@media (max-width: 1023px) {
-  body {
-    padding-bottom: 75px;
-  }
-}
-
-@media (min-width: 1024px) {
-  #mobile-bottom-nav {
-    display: none;
-  }
+  body { background: white; color: black; }
+  .no-print { display: none !important; }
 }
