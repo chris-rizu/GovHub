@@ -27,11 +27,11 @@ app.use(cors())
 app.use(express.json())
 
 app.get('/', (req, res) => {
-  return res.sendFile(path.join(staticRoot, 'index.html'))
+  return res.redirect('/admin')
 })
 
 app.get('/index.html', (req, res) => {
-  return res.sendFile(path.join(staticRoot, 'index.html'))
+  return res.redirect('/admin')
 })
 
 app.get('/admin', (req, res) => {

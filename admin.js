@@ -1,5 +1,5 @@
 const state = {
-  currentView: 'suggestions',
+  currentView: 'submissions',
   statusFilter: 'pending',
   session: null,
   overview: null
@@ -254,7 +254,9 @@ async function loadModerationView() {
   const json = await adminFetch(endpoint)
   const rows = state.currentView === 'suggestions' ? (json.suggestions || []) : (json.submissions || [])
   renderTable(rows, state.currentView)
-  els.resultsSummary.textContent = `${rows.length} ${state.currentView} shown`
+  els.resultsSummary.textContent = state.currentView === 'suggestions'
+    ? `${rows.length} office suggestions shown`
+    : `${rows.length} community reports shown`
   setActiveTab()
 }
 
