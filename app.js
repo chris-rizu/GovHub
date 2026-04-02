@@ -488,7 +488,7 @@ function populateCities() {
 
   citiesToDisplay.forEach(city => {
     const pill = document.createElement('div')
-    pill.className = `carousel-item pill text-xs sm:text-sm px-3 sm:px-5 h-8 sm:h-9 flex items-center rounded-full cursor-pointer ${city === currentLocation ? 'active' : ''} mx-1`
+    pill.className = `carousel-item pill text-xs sm:text-sm px-4 sm:px-6 h-9 sm:h-10 flex items-center rounded-2xl cursor-pointer ${city === currentLocation ? 'active' : ''} mx-1`
     pill.textContent = city
     pill.onclick = () => {
       currentLocation = city

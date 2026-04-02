@@ -189,6 +189,18 @@ input:checked + .toggle-slider:before { transform: translateX(20px); }
    AUTO-SCROLLING CAROUSEL
    =========================================== */
 
+.pill {
+  background: var(--card);
+  color: var(--text);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.pill.active {
+  background: var(--accent);
+  color: #0a0f1c;
+  font-weight: 600;
+}
+
 .auto-scroll-carousel {
   overflow-x: auto;
   overflow-y: hidden;
