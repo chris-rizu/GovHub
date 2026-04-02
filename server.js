@@ -102,7 +102,7 @@ function normalizeNullableText(value, options = {}) {
 
 function normalizeUpdateType(value) {
   const normalized = normalizeText(value, { maxLength: 50 })
-  const allowed = new Set(['fee', 'requirement', 'process', 'schedule', 'tip', 'other'])
+  const allowed = new Set(['fee', 'requirement', 'process', 'schedule', 'tip', 'suggestion', 'other'])
   return normalized && allowed.has(normalized) ? normalized : 'other'
 }
 
