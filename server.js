@@ -39,6 +39,9 @@ app.get('/admin', (req, res) => {
   return res.sendFile(path.join(staticRoot, 'admin.html'))
 })
 
+// Serve Vercel Analytics from node_modules
+app.use('/_vercel/analytics', express.static(path.join(__dirname, 'node_modules/@vercel/analytics/dist')))
+
 app.use(express.static(staticRoot, { index: false }))
 
 function requireSupabase(req, res, next) {
