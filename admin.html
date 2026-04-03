@@ -12,6 +12,12 @@
     .admin-shell-bg { background: linear-gradient(180deg, #0a0f1c 0%, #0f172a 100%); }
     html.light .admin-shell-bg { background: #ffffff; }
   </style>
+
+  <!-- Vercel Web Analytics -->
+  <script type="module">
+    import { inject } from '/_vercel/analytics/index.mjs';
+    inject();
+  </script>
 </head>
 <body class="antialiased dark min-h-screen bg-[var(--bg)] text-[var(--text)]">
   <div class="admin-shell-bg min-h-screen">
